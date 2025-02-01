@@ -1,14 +1,14 @@
 import axios from "axios";
 
 const CLIENT_ID = "sciwu0c9xbdms72kdc3xoa322vcrpc";
-const CLIENT_SECRET = "ceg0byo3ht0owvzdjwf1mga8yx9l99";
+const CLIENT_SECRET = "9o5mq0q6fp8tzorlrgx64zin790uyu";
 const TOKEN_URL = "https://id.twitch.tv/oauth2/token";
 const IGDB_URL = "https://api.igdb.com/v4";
 
 let accessToken = "";
 
 const getAccessToken = async () => {
-  if (accessToken) return accessToken; // Use cached token
+  if (accessToken) return accessToken;
 
   const response = await axios.post(TOKEN_URL, null, {
     params: {
@@ -18,6 +18,7 @@ const getAccessToken = async () => {
     },
   });
 
+  console.log(response.data);
   accessToken = response.data.access_token;
   return accessToken;
 };

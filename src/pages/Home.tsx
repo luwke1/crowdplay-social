@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchPopularGames } from "../api/igdbApi.ts"; // Import API function
+import { fetchPopularGames } from "../api/igdbApi.ts";
 
 const Home = () => {
     const navigate = useNavigate();
