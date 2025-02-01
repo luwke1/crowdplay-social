@@ -2,6 +2,7 @@ import axios from "axios";
 
 const CLIENT_ID = "sciwu0c9xbdms72kdc3xoa322vcrpc";
 const CLIENT_SECRET = "t0ao1isxyvcdmq1jkvcdul2br3hvx1";
+// testestkjdfklsdjf
 const TOKEN_URL = "https://id.twitch.tv/oauth2/token";
 const IGDB_URL = "https://api.igdb.com/v4";
 
