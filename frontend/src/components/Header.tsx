@@ -1,12 +1,13 @@
 import React from 'react';
+import '../styles/Header.css';
 
-// Define header functionality for traversing the site
+// Header functionality for traversing the site
 const Header = ()=>{
     return (
         <div className='header'>
             <a href="/">Games</a>
-            <a href="/friends">Friends</a>
-            <a href="/profile">Profile</a>
+            <a href="/profile">Friends</a>
+            <a href="/recommend">Profile</a>
         </div>
     );
 }
