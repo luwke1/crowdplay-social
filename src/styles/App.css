@@ -1,0 +1,16 @@
+* {
+  margin: 0;
+  border: 0;
+  box-sizing: border-box;
+}
+body {
+  background-color: #353535;
+  font-family: 'Montserrat';
+}
+
+
+
+/* ------MAIN-------- */
+.main-body{
+  padding-top: 60px;
+}

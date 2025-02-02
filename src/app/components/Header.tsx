@@ -1,8 +1,8 @@
 import React from 'react';
-import '../styles/Header.css';
+import '../../styles/Header.css';
 
 // Header functionality for traversing the site
-const Header = ()=>{
+const Header = () => {
     return (
         <div className='header'>
             <a href="/">Games</a>
@@ -10,8 +10,6 @@ const Header = ()=>{
             <a href="/recommend">Profile</a>
         </div>
     );
-}
-
-
+};
 
 export default Header;

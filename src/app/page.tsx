@@ -1,29 +1,43 @@
-// src/components/Home.jsx
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { fetchPopularGames } from "../api/igdbApi.ts";
+"use client";
 
-const Home = () => {
-  const navigate = useNavigate();
-  const [games, setGames] = useState([]);
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import axios from "axios";
+
+interface Game {
+  id: number;
+  name: string;
+  cover?: {
+    url: string;
+  };
+  rating?: number;
+}
+
+export default function HomePage() {
+  const router = useRouter();
+  const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string>("");
 
   useEffect(() => {
-    const getGames = async () => {
+    async function getGames() {
       try {
-        const data = await fetchPopularGames();
-        setGames(data);
-      } catch (err) {
+        const response = await axios.get("/api/igdb");
+        setGames(response.data);
+      } catch (err: any) {
         console.error("Failed to fetch games:", err);
         setError("Failed to load games.");
       } finally {
         setLoading(false);
       }
-    };
+    }
 
     getGames();
   }, []);
+
+  const handleGameClick = (gameId: number) => {
+    router.push(`/game/${gameId}`);
+  };
 
   return (
     <div className="popular-games main-body">
@@ -38,7 +52,8 @@ const Home = () => {
             <div
               key={game.id}
               className="game-card"
-              onClick={() => navigate(`/game/${game.id}`)}
+              onClick={() => handleGameClick(game.id)}
+              style={{ cursor: "pointer" }}
             >
               <img
                 src={game.cover?.url.replace("t_thumb", "t_cover_big")}
@@ -52,6 +67,4 @@ const Home = () => {
       )}
     </div>
   );
-};
-
-export default Home;
+}
