@@ -4,8 +4,11 @@
   box-sizing: border-box;
 }
 body {
-  background-color: #353535;
+  background-color: #525252;
   font-family: 'Montserrat';
+}
+h2 {
+  color: white;
 }
 
 

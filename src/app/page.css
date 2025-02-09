@@ -1,0 +1,27 @@
+
+.main-body {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 45px auto;}
+
+
+.popular-games h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 2rem;
+    color: #ffffff;
+}
+
+
+.game-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    row-gap: 30px;
+}
+
+@media (max-width: 600px) {
+    .main-body {
+        padding: 10px;
+    }
+}

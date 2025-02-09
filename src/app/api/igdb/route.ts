@@ -1,4 +1,3 @@
-// src/app/api/igdb/route.ts
 import { NextResponse } from "next/server";
 import axios from "axios";
 
@@ -24,33 +23,49 @@ const getAccessToken = async () => {
   return accessToken;
 };
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
     const token = await getAccessToken();
+    const url = new URL(req.url);
+    const gameId = url.searchParams.get("id");
 
-    // Modified query:
-    // - Includes 'rating_count' to check the number of reviews.
-    // - Filters for games with a rating above 80 and at least 50 reviews.
-    // - Sorts the results by 'rating_count' in descending order.
-    const query = `
-      fields name, cover.url, rating, rating_count;
-      where rating > 80 & rating_count > 50 & cover != null;
-      sort rating_count desc;
-      limit 10;
-    `;
+    if (gameId) {
+      // Fetch details for a specific game
+      const query = `
+        fields name, cover.url, rating, summary, genres.name, release_dates.human;
+        where id = ${gameId};
+      `;
 
-    const response = await axios.post(
-      `${IGDB_URL}/games`,
-      query,
-      {
+      const response = await axios.post(`${IGDB_URL}/games`, query, {
         headers: {
           "Client-ID": CLIENT_ID,
           Authorization: `Bearer ${token}`,
         },
-      }
-    );
+      });
 
-    return NextResponse.json(response.data);
+      if (!response.data.length) {
+        return NextResponse.json({ error: "Game not found" }, { status: 404 });
+      }
+
+      return NextResponse.json(response.data[0]);
+    } else {
+      // Fetch popular games
+      const query = `
+        fields name, cover.url, rating, rating_count;
+        where rating > 80 & rating_count > 50 & cover != null;
+        sort rating_count desc;
+        limit 20;
+      `;
+
+      const response = await axios.post(`${IGDB_URL}/games`, query, {
+        headers: {
+          "Client-ID": CLIENT_ID,
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return NextResponse.json(response.data);
+    }
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

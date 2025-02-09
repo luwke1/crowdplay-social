@@ -1,24 +1,27 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import "./page.css"
+import GameCard from "./components/GameCard";
 
+// Game interface
 interface Game {
   id: number;
   name: string;
-  cover?: {
-    url: string;
-  };
+  cover?: { url: string };
   rating?: number;
 }
 
+// Home page component
 export default function HomePage() {
   const router = useRouter();
   const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string>("");
+  const [error, setError] = useState("");
 
+  // Fetch popular games from the IGDB API
   useEffect(() => {
     async function getGames() {
       try {
@@ -35,8 +38,9 @@ export default function HomePage() {
     getGames();
   }, []);
 
+  // Handle game card click
   const handleGameClick = (gameId: number) => {
-    router.push(`/game/${gameId}`);
+    router.push(`/game/${gameId}`); // Redirect to the dynamic game page
   };
 
   return (
@@ -47,21 +51,9 @@ export default function HomePage() {
       ) : error ? (
         <p>{error}</p>
       ) : (
-        <div className="game-list">
+        <div className="game-list" style={{ display: "flex", flexWrap: "wrap" }}>
           {games.map((game) => (
-            <div
-              key={game.id}
-              className="game-card"
-              onClick={() => handleGameClick(game.id)}
-              style={{ cursor: "pointer" }}
-            >
-              <img
-                src={game.cover?.url.replace("t_thumb", "t_cover_big")}
-                alt={game.name}
-              />
-              <h3>{game.name}</h3>
-              <p>⭐ {game.rating ? Math.round(game.rating) : "N/A"}</p>
-            </div>
+            <GameCard key={game.id} game={game} onClick={handleGameClick} />
           ))}
         </div>
       )}
