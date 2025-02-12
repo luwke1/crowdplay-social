@@ -6,7 +6,6 @@ import axios from "axios";
 import { supabase } from "@/utils/supabase";
 import "./game.css";
 
-// Define Game Type
 interface Game {
     id: number;
     name: string;
