@@ -9,7 +9,7 @@ interface Game {
   rating?: number;
 }
 
-// Define the GameCardProps interface
+// GameCardProps interface
 interface GameCardProps {
   game: Game;
   onClick: (gameId: number) => void;

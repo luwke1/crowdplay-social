@@ -32,7 +32,7 @@ export async function GET(req: Request) {
     if (gameId) {
       // Fetch details for a specific game
       const query = `
-        fields name, cover.url, rating, summary, genres.name, release_dates.human;
+        fields name, cover.image_id, rating, summary, genres.name, release_dates.human;
         where id = ${gameId};
       `;
 

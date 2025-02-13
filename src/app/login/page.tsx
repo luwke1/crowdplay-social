@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/utils/supabase";
+import { login } from "@/api/auth";
 import "./login.css";
 
 export default function LoginPage() {
@@ -17,18 +17,12 @@ export default function LoginPage() {
 		e.preventDefault();
 		setLoading(true);
 		setError(null);
-		
-		try {
-			// Login the user
-			const { error } = await supabase.auth.signInWithPassword({ email, password });
 
-			if (error) {
-				setError(error.message);
-			} else {
-				router.push("/");
-			}
-		} catch (err) {
-			setError("Something went wrong. Please try again.");
+		try {
+			await login(email, password);
+			router.push("/");
+		} catch (err: any) {
+			setError(err.message || "Something went wrong. Please try again.");
 		}
 
 		setLoading(false);

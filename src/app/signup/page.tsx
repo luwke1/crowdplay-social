@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/utils/supabase";
+import { signUp } from "@/api/auth";
 import "../login/login.css";
 
 export default function SignupPage() {
@@ -13,41 +13,17 @@ export default function SignupPage() {
     const [loading, setLoading] = useState(false);
     const router = useRouter();
 
-    // Handle sign up form submission
+    // Handle sign-up form submission
     const handleSignup = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
 
-        // Sign up the user
         try {
-            const { data, error } = await supabase.auth.signUp({ email, password });
-
-            // Handle sign up error
-            if (error) {
-                setError(error.message);
-                setLoading(false);
-                return;
-            }
-
-            // Create user profile in the `profiles` table
-            const userId = data.user?.id;
-            if (userId) {
-                const { error: profileError } = await supabase
-                    .from("profiles")
-                    .insert([{ id: userId, username }]);
-
-                if (profileError) {
-                    setError(profileError.message);
-                    setLoading(false);
-                    return;
-                }
-            }
-
-            // Redirect user to home after successful signup
+            await signUp(email, password, username);
             router.push("/");
-        } catch (err) {
-            setError("Something went wrong. Please try again.");
+        } catch (err: any) {
+            setError(err.message || "Something went wrong. Please try again.");
         }
 
         setLoading(false);
@@ -84,7 +60,6 @@ export default function SignupPage() {
                 {error && <p className="error">{error}</p>}
             </form>
 
-            {/* Login Link */}
             <p className="switch-auth">
                 Already have an account? <a href="/login">Login here</a>.
             </p>
