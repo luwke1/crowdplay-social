@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { getUserReview, getCurrentUser, upsertUserReview } from "@/api/auth";
+import { getUserReview, getCurrentUser, upsertUserReview} from "@/api/auth";
 import axios from "axios";
 import "./game.css";
 
@@ -20,6 +20,7 @@ export default function GamePage() {
 	const [error, setError] = useState<string | null>(null);
 	const [user, setUser] = useState<any>(null);
 	const [reviews, setReviews] = useState<any[]>([]);
+	const [reviewText, setReviewText] = useState<string>("");
 
 	const getHighResImage = (imageId: string, size: string = "1080p") => {
 		return `https://images.igdb.com/igdb/image/upload/t_${size}/${imageId}.jpg`;
@@ -55,9 +56,9 @@ export default function GamePage() {
 		async function fetchUserReview() {
 			try {
 				if (!user || !game) return;
-	
+
 				const data = await getUserReview(user.id, game.id);
-	
+
 				// Only update if no existing review is in state (prevents flickering)
 				if (reviews.length === 0) {
 					setReviews(data ? data : []);
@@ -66,11 +67,11 @@ export default function GamePage() {
 				console.error("Error fetching user review:", err);
 			}
 		}
-	
+
 		if (game && user) {
 			fetchUserReview();
 		}
-	
+
 	}, [game, user]);
 
 	// Get rating color or default to gray if no review exists
@@ -82,30 +83,45 @@ export default function GamePage() {
 		return "#e74c3c";
 	};
 
-	const setNewRating = async (rating: number) => {
+	const setNewRating = async (rating: number, reviewText:string = "") => {
 		if (!user || !game) {
 			console.error("Missing user or game data.");
 			return;
 		}
-	
+
 		try {
+			const coverUrl = game.cover
+				? `https://images.igdb.com/igdb/image/upload/t_cover_big/${game.cover.image_id}.jpg`
+				: "";
+
 			// If a review exists, update it. Otherwise, insert a new one.
-			const existingReview = reviews.length > 0 
-    			? { ...reviews[0], rating }  
-    			: { user_id: user.id, game_id: game.id, rating, review_text: "" };
-			
+			if (reviews.length > 0){
+				if (reviews[0].review_text != "" && reviewText == ""){
+					reviewText = reviews[0].review_text;
+				}
+			}
+			const existingReview = reviews.length > 0
+				? { ...reviews[0], rating, review_text:reviewText}
+				: { user_id: user.id, game_id: game.id, game_title: game.name, cover_url: coverUrl, rating, review_text: reviewText };
+
 			// Update UI immediately
 			setReviews([existingReview]);
 
 			// Upsert review (update or insert)
-			await upsertUserReview(user.id, game.id, rating, existingReview.review_text);
+			await upsertUserReview(user.id, game.id, game.name, coverUrl, rating, existingReview.review_text);
 			console.log("Review successfully updated");
 
 		} catch (err) {
 			console.error("Error updating review:", err);
 			setError("Failed to update review. Try again.");
 		}
-	};	
+	};
+
+	// Function to update review text state
+	const handleReviewChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+		setReviewText(event.target.value);
+	};
+
 
 	return (
 		<div className="game-page">
@@ -148,8 +164,8 @@ export default function GamePage() {
 						{/* Review Form */}
 						<div className="review-form">
 							<h3>Leave a Review</h3>
-							<textarea placeholder="Write your review (optional)..." />
-							<button>Submit Review</button>
+							<textarea onChange={handleReviewChange} placeholder="Write your review (optional)..." />
+							<button onClick={() => setNewRating(reviews[0].rating, reviewText)} disabled={!user || reviews.length <= 0 || reviewText.trim().length < 2}>Submit Review</button>
 							{error && <p className="error">{error}</p>}
 						</div>
 					</div>

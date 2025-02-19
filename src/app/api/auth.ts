@@ -54,12 +54,33 @@ export const getUserReview = async (userId: string, gameId: number) => {
 export const upsertUserReview = async (
   userId: string,
   gameId: number,
+  gameTitle: string,
+  coverUrl: string,
   rating: number,
   reviewText: string = ""
 ) => {
-  const { data, error } = await supabase
-    .from("reviews")
-    .upsert(
+  try {
+    // Check if the game already exists in the database
+    const { data: existingGame, error: gameError } = await supabase
+      .from("games")
+      .select("game_id")
+      .eq("game_id", gameId)
+      .single();
+
+    if (!existingGame) {
+      // Insert game into `games` table if it doesn't exist
+      const { error: insertGameError } = await supabase.from("games").insert([
+        {
+          game_id: gameId,
+          game_title: gameTitle,
+          cover_url: coverUrl,
+        },
+      ]);
+      if (insertGameError) throw insertGameError;
+    }
+
+    // Upsert the review (no more game_title or cover_url in reviews table)
+    const { data, error } = await supabase.from("reviews").upsert(
       [
         {
           user_id: userId,
@@ -67,15 +88,31 @@ export const upsertUserReview = async (
           rating: rating,
           review_text: reviewText,
           created_at: new Date().toISOString(),
-        }
+        },
       ],
       { onConflict: "user_id, game_id" }
     );
 
-  if (error) {
-    console.error("Error updating/inserting review:", error.message);
-    throw error;
-  }
+    if (error) throw error;
 
-  return data;
+    return data;
+  } catch (err) {
+    console.error("Error upserting review:", err);
+    throw err;
+  }
 };
+
+export const removeUserReview = async (user: any, gameId: number) => {
+  try {
+    const { error } = await supabase
+      .from("reviews")
+      .delete()
+      .eq("user_id", user.id)
+      .eq("game_id", gameId);
+
+    return { error };
+  } catch (err) {
+    console.error("Error deleting review:", err);
+    throw err;
+  }
+}
