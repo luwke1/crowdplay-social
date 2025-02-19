@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { getUserReview, getCurrentUser, upsertUserReview} from "@/api/auth";
+import { getCurrentUser } from "@/api/auth";
+import { getUserReview, upsertUserReview, getGameReviews } from "@/api/reviews";
 import axios from "axios";
 import "./game.css";
 
@@ -21,6 +22,8 @@ export default function GamePage() {
 	const [user, setUser] = useState<any>(null);
 	const [reviews, setReviews] = useState<any[]>([]);
 	const [reviewText, setReviewText] = useState<string>("");
+
+	const [gameReviews, setGameReviews] = useState<any[]>([]);
 
 	const getHighResImage = (imageId: string, size: string = "1080p") => {
 		return `https://images.igdb.com/igdb/image/upload/t_${size}/${imageId}.jpg`;
@@ -47,9 +50,23 @@ export default function GamePage() {
 				console.error("Error fetching user:", err);
 			}
 		}
+		async function fetchGameReviews() {
+			try {
+				const gameId = Number(id);
+				if (isNaN(gameId)) {
+					console.error("Invalid game ID:", id);
+					return;
+				}
+				const reviews = await getGameReviews(gameId);
+				setGameReviews(reviews);
+			} catch (err) {
+				console.error("Error fetching reviews:", err);
+			}
+		}
 
 		fetchGameDetails();
 		fetchUser();
+		fetchGameReviews();
 	}, [id]);
 
 	useEffect(() => {
@@ -83,7 +100,7 @@ export default function GamePage() {
 		return "#e74c3c";
 	};
 
-	const setNewRating = async (rating: number, reviewText:string = "") => {
+	const setNewRating = async (rating: number, reviewText: string = "") => {
 		if (!user || !game) {
 			console.error("Missing user or game data.");
 			return;
@@ -95,13 +112,13 @@ export default function GamePage() {
 				: "";
 
 			// If a review exists, update it. Otherwise, insert a new one.
-			if (reviews.length > 0){
-				if (reviews[0].review_text != "" && reviewText == ""){
+			if (reviews.length > 0) {
+				if (reviews[0].review_text != "" && reviewText == "") {
 					reviewText = reviews[0].review_text;
 				}
 			}
 			const existingReview = reviews.length > 0
-				? { ...reviews[0], rating, review_text:reviewText}
+				? { ...reviews[0], rating, review_text: reviewText }
 				: { user_id: user.id, game_id: game.id, game_title: game.name, cover_url: coverUrl, rating, review_text: reviewText };
 
 			// Update UI immediately
@@ -168,6 +185,16 @@ export default function GamePage() {
 							<button onClick={() => setNewRating(reviews[0].rating, reviewText)} disabled={!user || reviews.length <= 0 || reviewText.trim().length < 2}>Submit Review</button>
 							{error && <p className="error">{error}</p>}
 						</div>
+					</div>
+					<div className="reviews-container">
+						<h3>Reviews</h3>
+						{gameReviews.map((review) => (
+							<div key={review.user_id + "-" + review.game_id} className="review-card">
+								<h4>{review.username}</h4>
+								<p>{review.review_text}</p>
+								<p>{review.rating}</p>
+							</div>
+						))}
 					</div>
 				</div>
 			) : (

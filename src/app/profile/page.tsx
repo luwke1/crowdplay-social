@@ -2,7 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import { supabase } from "../utils/supabase";
-import { getCurrentUser, removeUserReview} from "@/api/auth";
+import { getCurrentUser } from "@/api/auth";
+import { removeUserReview} from "@/api/reviews";
 import "./profile.css";
 
 const REVIEWS_PER_PAGE = 50;
