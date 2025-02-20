@@ -143,60 +143,70 @@ export default function GamePage() {
 	return (
 		<div className="game-page">
 			{game ? (
-				<div className="game-container">
-					{/* Left Column: Game Cover */}
-					<div className="game-cover">
-						{game.cover && <img src={getHighResImage(game.cover.image_id)} alt={game.name} />}
-					</div>
+				<>
+					<div className="game-container">
+						{/* Left Column: Game Cover */}
+						<div className="game-cover">
+							{game.cover && <img src={getHighResImage(game.cover.image_id)} alt={game.name} />}
+						</div>
 
-					{/* Middle Column: Title & Description */}
-					<div className="game-info">
-						<h2 className="game-title">{game.name}</h2>
-						<p className="game-summary">{game.summary}</p>
-					</div>
+						{/* Middle Column: Title & Description */}
+						<div className="game-info">
+							<h2 className="game-title">{game.name}</h2>
+							<p className="game-summary">{game.summary}</p>
+						</div>
 
-					{/* Right Column: Rating & Review Section */}
-					<div className="game-actions">
-						<h3 className="rating-title">My Score</h3>
+						{/* Right Column: Rating & Review Section */}
+						<div className="game-actions">
+							<h3 className="rating-title">My Score</h3>
 
-						{/* Metacritic-Style Rating System */}
-						<div className="rating-container">
-							{/* Score Circle */}
-							<div className="rating-circle" style={{ backgroundColor: getRatingColor() }}>
-								{reviews.length > 0 ? reviews[0].rating : "-"}
+							{/* Metacritic-Style Rating System */}
+							<div className="rating-container">
+								{/* Score Circle */}
+								<div className="rating-circle" style={{ backgroundColor: getRatingColor() }}>
+									{reviews.length > 0 ? reviews[0].rating : "-"}
+								</div>
+
+								{/* Rating Bar */}
+								<div className="rating-bar">
+									{[...Array(10)].map((_, index) => (
+										<div
+											key={index}
+											className={`rating-box ${reviews.length > 0 && index < reviews[0].rating ? "filled" : ""}`}
+											onClick={() => setNewRating(index + 1)}
+										/>
+									))}
+								</div>
 							</div>
 
-							{/* Rating Bar */}
-							<div className="rating-bar">
-								{[...Array(10)].map((_, index) => (
-									<div
-										key={index}
-										className={`rating-box ${reviews.length > 0 && index < reviews[0].rating ? "filled" : ""}`}
-										onClick={() => setNewRating(index + 1)}
-									/>
-								))}
+							{/* Review Form */}
+							<div className="review-form">
+								<h3>Leave a Review</h3>
+								<textarea onChange={handleReviewChange} placeholder="Write your review (optional)..." />
+								<button onClick={() => setNewRating(reviews[0].rating, reviewText)} disabled={!user || reviews.length <= 0 || reviewText.trim().length < 2}>Submit Review</button>
+								{error && <p className="error">{error}</p>}
 							</div>
 						</div>
 
-						{/* Review Form */}
-						<div className="review-form">
-							<h3>Leave a Review</h3>
-							<textarea onChange={handleReviewChange} placeholder="Write your review (optional)..." />
-							<button onClick={() => setNewRating(reviews[0].rating, reviewText)} disabled={!user || reviews.length <= 0 || reviewText.trim().length < 2}>Submit Review</button>
-							{error && <p className="error">{error}</p>}
-						</div>
+
 					</div>
 					<div className="reviews-container">
-						<h3>Reviews</h3>
-						{gameReviews.map((review) => (
-							<div key={review.user_id + "-" + review.game_id} className="review-card">
-								<h4>{review.username}</h4>
-								<p>{review.review_text}</p>
-								<p>{review.rating}</p>
-							</div>
-						))}
+						<h3 className="reviews-title">User Reviews</h3>
+						{gameReviews.length > 0 ? (
+							gameReviews.map((review) => (
+								<div key={`${review.user_id}-${review.game_id}`} className="review-card">
+									<div className="review-header">
+										<h4 className="review-username">{review.username}</h4>
+										<span className="review-rating">{review.rating}/10</span>
+									</div>
+									<p className="review-text">{review.review_text}</p>
+								</div>
+							))
+						) : (
+							<p className="no-reviews">No written reviews yet. Be the first to leave one!</p>
+						)}
 					</div>
-				</div>
+				</>
 			) : (
 				<p>Loading game details...</p>
 			)}

@@ -1,4 +1,3 @@
-// GameCard.tsx
 import React from "react";
 import "./GameCard.css";
 
@@ -9,7 +8,6 @@ interface Game {
   rating?: number;
 }
 
-// GameCardProps interface
 interface GameCardProps {
   game: Game;
   onClick: (gameId: number) => void;

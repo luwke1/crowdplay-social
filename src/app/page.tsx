@@ -6,7 +6,6 @@ import axios from "axios";
 import "./page.css"
 import GameCard from "./components/GameCard";
 
-// Game interface
 interface Game {
   id: number;
   name: string;
@@ -40,7 +39,7 @@ export default function HomePage() {
 
   // Handle game card click
   const handleGameClick = (gameId: number) => {
-    router.push(`/game/${gameId}`); // Redirect to the dynamic game page
+    router.push(`/game/${gameId}`);
   };
 
   return (

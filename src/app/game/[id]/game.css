@@ -15,8 +15,15 @@
     display: grid;
     grid-template-columns: 1fr 2fr 1fr;
     gap: 20px;
-    height: 600px;
-    align-items: start;
+    align-items: stretch;
+}
+
+.game-cover,
+.game-info,
+.game-actions {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 /* Left Column: Game Cover */
@@ -95,16 +102,16 @@
 
 /* Highlighted Rating */
 .rating-box.filled {
-    background-color: #e74c3c; /* Default red for low rating */
+    background-color: #e74c3c;
 }
 
 /* Dynamic Color Updates */
 .rating-box:nth-child(n + 4).filled {
-    background-color: #ffbf00; /* Yellow for 4-6 rating */
+    background-color: #ffbf00;
 }
 
 .rating-box:nth-child(n + 7).filled {
-    background-color: #3ca62b; /* Green for 7-10 rating */
+    background-color: #3ca62b;
 }
 
 /* Review Form */
@@ -148,9 +155,15 @@
 .review-card {
     margin-top: 20px;
     padding: 10px;
+    width: 100%;
     background-color: #333;
     border-radius: 8px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.reviews-container{
+    margin-top: 40px;
+    width: 100%;
 }
 
 /* Responsive Design */
