@@ -23,7 +23,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 			}
 		};
 		fetchUser();
-	}, [pathname]); // Re-run when route changes
+	}, [pathname]);
 
 	return (
 		<html lang="en">

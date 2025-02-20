@@ -2,15 +2,16 @@
 
 import React, { useEffect, useState } from "react";
 import { supabase } from "../utils/supabase";
-import { getCurrentUser, removeUserReview} from "@/api/auth";
+import { getCurrentUser } from "@/api/auth";
+import { removeUserReview} from "@/api/reviews";
 import "./profile.css";
 
 const REVIEWS_PER_PAGE = 50;
 
 const getRatingColor = (rating: number) => {
-    if (rating >= 7) return "#3ca62b"; // Green
-    if (rating >= 4) return "#ffbf00"; // Yellow
-    return "#e74c3c"; // Red
+    if (rating >= 7) return "#3ca62b";
+    if (rating >= 4) return "#ffbf00";
+    return "#e74c3c";
 };
 
 const ProfilePage: React.FC = () => {

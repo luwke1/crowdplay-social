@@ -30,7 +30,7 @@
 
 /* ---- Add Styles for Buttons ---- */
 .header button {
-  background-color: #444; /* Dark grey to match the theme */
+  background-color: #444;
   color: white;
   border: none;
   padding: 10px 15px;
