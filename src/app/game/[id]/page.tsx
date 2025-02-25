@@ -93,7 +93,7 @@ export default function GamePage() {
 
 	// Get rating color or default to gray if no review exists
 	const getRatingColor = () => {
-		if (reviews.length === 0) return "#ccc"; // Gray if no review
+		if (reviews.length === 0) return "#ccc";
 		const rating = reviews[0].rating;
 		if (rating >= 7) return "#3ca62b";
 		if (rating >= 4) return "#ffbf00";
