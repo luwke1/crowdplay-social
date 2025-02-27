@@ -24,8 +24,6 @@ const GameCard: React.FC<GameCardProps> = ({ game, onClick }) => {
           alt={game.name}
         />
       )}
-      {/* <h3>{game.name}</h3> */}
-      {/* <p>Community Score: {game.rating ? Math.round(game.rating) : "N/A"}</p> */}
     </div>
   );
 };

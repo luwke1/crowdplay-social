@@ -32,7 +32,7 @@ const Header = () => {
     try {
       await supabase.auth.signOut();
       setUser(null);
-      router.push("/login"); // Redirect to login page
+      router.push("/login");
     } catch (error) {
       console.error("Logout failed:", error);
     }
@@ -40,6 +40,10 @@ const Header = () => {
 
   return (
     <div className="header">
+      <div className="search">
+        <img src="search.svg" alt="" />
+        <input type="text" />
+      </div>
       <a href="/">Games</a>
       <a href="/friends">Friends</a>
       <a href="/profile">Profile</a>
