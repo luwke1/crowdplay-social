@@ -23,22 +23,6 @@ const getAccessToken = async () => {
   return accessToken;
 };
 
-// Transformation function for game objects
-function transformGame(game: any) {
-  if (game.cover) {
-    if (game.cover.image_id) {
-      game.cover = {
-        url: `https://images.igdb.com/igdb/image/upload/t_cover_big/${game.cover.image_id}.jpg`
-      };
-    } else {
-      game.cover = { url: FALLBACK_COVER_URL };
-    }
-  } else {
-    game.cover = { url: FALLBACK_COVER_URL };
-  }
-  return game;
-}
-
 export async function GET(req: Request) {
   try {
     const token = await getAccessToken();
@@ -67,7 +51,7 @@ export async function GET(req: Request) {
     } else if (requestType === "latest") {
       // Fetch the latest games with offset
       const query = `
-        fields name, cover.image_id, rating, summary, genres.name, release_dates.human, first_release_date;
+        fields name, cover.url, rating, summary, genres.name, release_dates.human, first_release_date;
         where first_release_date > ${Math.floor(Date.now() / 1000) - 2592000} & cover != null;
         sort popularity desc;
         limit 20;
@@ -79,8 +63,7 @@ export async function GET(req: Request) {
           Authorization: `Bearer ${token}`,
         },
       });
-      const games = response.data.map(transformGame);
-      return NextResponse.json(games);
+      return NextResponse.json(response.data);
     } else {
       // Fetch popular games with offset
       const query = `
