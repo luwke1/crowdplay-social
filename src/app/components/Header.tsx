@@ -38,11 +38,18 @@ const Header = () => {
     }
   };
 
+  const handleSearch = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") { 
+      const searchQuery = (event.target as HTMLInputElement).value;
+      router.push(`/search?q=${searchQuery}`);
+    }
+  }
+
   return (
     <div className="header">
       <div className="search">
         <img src="search.svg" alt="" />
-        <input type="text" />
+        <input onKeyDown={handleSearch} type="text" />
       </div>
       <a href="/">Games</a>
       <a href="/friends">Friends</a>
