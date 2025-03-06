@@ -33,7 +33,7 @@ Crowdplay-Social is a social platform for gamers to review, share, and discover 
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-repo/crowdplay-social.git
+   git clone https://github.com/luwke1/crowdplay-social.git
    ```
 2. Install dependencies:
    ```bash
