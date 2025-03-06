@@ -1,16 +1,19 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useSearchParams } from 'next/navigation';
 import './search.css';
 
 export default function SearchPage() {
+    const router = useRouter();
+
     const searchParams = useSearchParams();
     const query = searchParams.get("q") || "";
 
     const [loading, setLoading] = React.useState(false);
     const [results, setResults] = React.useState([]);
-    const [page, setPage] = React.useState(0);
+    const [page, setPage] = React.useState(1);
 
     const fetchResults = async (pageNumber: number) => {
         setLoading(true);
@@ -27,15 +30,13 @@ export default function SearchPage() {
 
     useEffect(() => {
         if (query) {
-            fetchResults(1);
-        }
-    }, [query]);
-
-    useEffect(() => {
-        if (query) {
             fetchResults(page);
         }
     }, [page, query]);
+
+    const handleGameClick = (gameId: number) => {
+        router.push(`/game/${gameId}`);
+    };
 
     return (
         <div className="main-body">
@@ -44,7 +45,7 @@ export default function SearchPage() {
             ) : (
                 <div className="search-results">
                     {results.map((game: any) => (
-                        <div className="result-card" key={game.id}>
+                        <div onClick={()=>handleGameClick(game.id)} className="result-card" key={game.id}>
                             <div>
                                 {game.cover && game.cover.url ? (
                                     <img src={game.cover.url} alt={game.name} width="100" />
@@ -60,7 +61,7 @@ export default function SearchPage() {
                     ))}
                 </div>
             )}
-            <div className="pagination">
+            {/* <div className="pagination">
                 <button onClick={() => setPage(page - 1)} disabled={page === 1}>
                     Previous
                 </button>
@@ -68,7 +69,7 @@ export default function SearchPage() {
                 <button onClick={() => setPage(page + 1)}>
                     Next
                 </button>
-            </div>
+            </div> */}
         </div>
     );
 };
