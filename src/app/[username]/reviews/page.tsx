@@ -1,20 +1,16 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { supabase } from "../utils/supabase";
-import { getCurrentUser } from "@/api/auth";
-import { removeUserReview, getUserReviews} from "@/api/reviews";
-import "./profile.css";
+import { getReviewsUsername } from "@/api/reviews";
+import "@/profile/profile.css";
+import { useParams, useRouter } from "next/navigation";
 
 const REVIEWS_PER_PAGE = 50;
 
-const getRatingColor = (rating: number) => {
-    if (rating >= 7) return "#3ca62b";
-    if (rating >= 4) return "#ffbf00";
-    return "#e74c3c";
-};
-
-const ProfilePage: React.FC = () => {
+export default function ReviewsPage() {
+    const router = useRouter();
+    
+    const { username } = useParams();
     const [user, setUser] = useState<any>(null);
     const [reviews, setReviews] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
@@ -22,36 +18,36 @@ const ProfilePage: React.FC = () => {
     const [page, setPage] = useState<number>(0);
     const [totalReviews, setTotalReviews] = useState<number>(0);
 
+    const getRatingColor = (rating: number) => {
+        if (rating >= 7) return "#3ca62b";
+        if (rating >= 4) return "#ffbf00";
+        return "#e74c3c";
+    };
+
     useEffect(() => {
         const fetchReviews = async () => {
-          setLoading(true);
-          setError(null);
-          try {
-            const currentUser = await getCurrentUser();
-            if (!currentUser) {
-              setError("No user logged in.");
-              setLoading(false);
-              return;
+            setLoading(true);
+            setError(null);
+            try {
+
+                const { data, count, error: reviewError } = await getReviewsUsername(username, page, REVIEWS_PER_PAGE);
+
+                if (reviewError) {
+                    setError("Error fetching reviews.");
+                } else {
+                    setReviews(data || []);
+                    setTotalReviews(count || 0);
+                }
+            } catch (err) {
+                console.error(err);
+                setError("Failed to load reviews.");
             }
-            setUser(currentUser);
-    
-            const { data, count, error: reviewError } = await getUserReviews(currentUser.id, page, REVIEWS_PER_PAGE);
-    
-            if (reviewError) {
-              setError("Error fetching reviews.");
-            } else {
-              setReviews(data || []);
-              setTotalReviews(count || 0);
-            }
-          } catch (err) {
-            console.error(err);
-            setError("Failed to load reviews.");
-          }
-          setLoading(false);
+            setLoading(false);
         };
-    
+
         fetchReviews();
-      }, [page]);
+    }, [page]);
+
 
     const handleNextPage = () => {
         if ((page + 1) * REVIEWS_PER_PAGE < totalReviews) {
@@ -65,35 +61,20 @@ const ProfilePage: React.FC = () => {
         }
     };
 
-    const removeReview = async (gameId: number) => {
-        if (!user) return;
-    
-        try {
-            // Call API to remove review
-            const { error } = await removeUserReview(user, gameId);
-            if (error) throw error;
-    
-            // Update UI by filtering out deleted review
-            setReviews((prevReviews) => prevReviews.filter(review => review.game_id !== gameId));
-            setTotalReviews((prevCount) => Math.max(prevCount - 1, 0));
-    
-            console.log("Review removed successfully!");
-        } catch (err) {
-            console.error("Failed to delete review:", err);
-        }
+    const handleGameClick = (gameId: number) => {
+        router.push(`/game/${gameId}`);
     };
 
     return (
         <div className="profile-container">
-            <h1>My Reviews</h1>
+            <h1>{username} Reviews</h1>
             {loading && <p>Loading reviews...</p>}
             {error && <p className="error">{error}</p>}
             {!loading && !error && reviews.length === 0 && <p>No reviews found.</p>}
 
             <div className="review-grid">
                 {reviews.map((review) => (
-                    <div key={`${review.user_id}-${review.game_id}`} className="review-card">
-                        <img onClick={() => removeReview(review.game_id)} className="delete-icon" src="/deleteIcon.svg" alt="Delete Icon" width={24} height={24} />
+                    <div key={`${review.user_id}-${review.game_id}`} onClick={() => handleGameClick(review.game_id)} className="review-card">
                         <img className="card-cover" src={review.games.cover_url} alt={review.games.game_title} />
                         <div
                             className="rating-badge"
@@ -124,5 +105,3 @@ const ProfilePage: React.FC = () => {
         </div>
     );
 };
-
-export default ProfilePage;
