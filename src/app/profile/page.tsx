@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { supabase } from "../utils/supabase";
+import { useRouter } from "next/navigation";
 import { getCurrentUser } from "@/api/auth";
 import { removeUserReview, getUserReviews} from "@/api/reviews";
 import "./profile.css";
@@ -15,6 +15,7 @@ const getRatingColor = (rating: number) => {
 };
 
 const ProfilePage: React.FC = () => {
+    const router = useRouter();
     const [user, setUser] = useState<any>(null);
     const [reviews, setReviews] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
@@ -83,6 +84,10 @@ const ProfilePage: React.FC = () => {
         }
     };
 
+    const handleGameClick = (gameId: number) => {
+        router.push(`/game/${gameId}`);
+    };
+
     return (
         <div className="profile-container">
             <h1>My Reviews</h1>
@@ -92,9 +97,9 @@ const ProfilePage: React.FC = () => {
 
             <div className="review-grid">
                 {reviews.map((review) => (
-                    <div key={`${review.user_id}-${review.game_id}`} className="review-card">
+                    <div key={`${review.user_id}-${review.game_id}`}  className="review-card">
                         <img onClick={() => removeReview(review.game_id)} className="delete-icon" src="/deleteIcon.svg" alt="Delete Icon" width={24} height={24} />
-                        <img className="card-cover" src={review.games.cover_url} alt={review.games.game_title} />
+                        <img onClick={()=> {handleGameClick(review.game_id)}} className="card-cover" src={review.games.cover_url} alt={review.games.game_title} />
                         <div
                             className="rating-badge"
                             style={{ backgroundColor: getRatingColor(review.rating) }}

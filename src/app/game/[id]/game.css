@@ -119,6 +119,11 @@
     margin-top: 20px;
 }
 
+.game-review-username:hover{
+    cursor: pointer;
+    text-decoration: underline;
+}
+
 .game-review-form textarea {
     width: 100%;
     height: 80px;

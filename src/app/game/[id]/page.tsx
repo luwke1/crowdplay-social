@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { getCurrentUser } from "@/api/auth";
 import { getUserReview, upsertUserReview, getGameReviews } from "@/api/reviews";
 import axios from "axios";
@@ -16,6 +16,7 @@ interface Game {
 }
 
 export default function GamePage() {
+	const router = useRouter();
 	const { id } = useParams();
 	const [game, setGame] = useState<Game | null>(null);
 	const [error, setError] = useState<string | null>(null);
@@ -139,6 +140,10 @@ export default function GamePage() {
 		setReviewText(event.target.value);
 	};
 
+	const viewUser = (username:string) => {
+		router.push(`/${username}/reviews`);
+	};
+
 
 	return (
 		<div className="game-page">
@@ -196,7 +201,7 @@ export default function GamePage() {
 							gameReviews.map((review) => (
 								<div key={`${review.user_id}-${review.game_id}`} className="game-review-card">
 									<div className="game-review-header">
-										<h4 className="game-review-username">{review.username}</h4>
+										<h4 onClick={() => {viewUser(review.username)}} className="game-review-username">{review.username}</h4>
 										<span className="game-review-rating">{review.rating}/10</span>
 									</div>
 									<p className="game-review-text">{review.review_text}</p>
