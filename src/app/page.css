@@ -4,9 +4,12 @@
     max-width: 1200px;
     margin: 45px auto;}
 
+.game-list-container {
+    margin-bottom: 60px;
+}
 
 .game-list-container h2 {
-    margin-bottom: 20px;
+    /* margin-bottom: 20px; */
     font-size: 2rem;
     color: #ffffff;
 }
@@ -30,6 +33,11 @@
     background-color: rgb(0, 0, 0);
     color: white;
     cursor: pointer;
+}
+
+hr{
+    border: 1px solid #ffffff;
+    margin: 5px 0px 15px 0px;
 }
 
 

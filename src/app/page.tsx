@@ -71,6 +71,7 @@ export default function HomePage() {
       {/* Popular Games Section */}
       <div className="game-list-container">
         <h2>Popular Games</h2>
+        <hr/> 
         {popularError && <p>{popularError}</p>}
         <div className="game-list">
           {loadingPopular ? (
@@ -92,6 +93,7 @@ export default function HomePage() {
       {/* Latest Games Section */}
       <div className="game-list-container">
         <h2>Latest Games</h2>
+        <hr/> 
         {latestError && <p>{latestError}</p>}
         <div className="game-list">
           {loadingLatest ? (
