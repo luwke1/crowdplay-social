@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getCurrentUser } from "@/api/auth";
-import { removeUserReview, getUserReviews} from "@/api/reviews";
+import { removeUserReview, getUserReviews } from "@/api/reviews";
 import "./profile.css";
 
 const REVIEWS_PER_PAGE = 50;
@@ -25,34 +25,34 @@ const ProfilePage: React.FC = () => {
 
     useEffect(() => {
         const fetchReviews = async () => {
-          setLoading(true);
-          setError(null);
-          try {
-            const currentUser = await getCurrentUser();
-            if (!currentUser) {
-              setError("No user logged in.");
-              setLoading(false);
-              return;
+            setLoading(true);
+            setError(null);
+            try {
+                const currentUser = await getCurrentUser();
+                if (!currentUser) {
+                    setError("No user logged in.");
+                    setLoading(false);
+                    return;
+                }
+                setUser(currentUser);
+
+                const { data, count, error: reviewError } = await getUserReviews(currentUser.id, page, REVIEWS_PER_PAGE);
+
+                if (reviewError) {
+                    setError("Error fetching reviews.");
+                } else {
+                    setReviews(data || []);
+                    setTotalReviews(count || 0);
+                }
+            } catch (err) {
+                console.error(err);
+                setError("Failed to load reviews.");
             }
-            setUser(currentUser);
-    
-            const { data, count, error: reviewError } = await getUserReviews(currentUser.id, page, REVIEWS_PER_PAGE);
-    
-            if (reviewError) {
-              setError("Error fetching reviews.");
-            } else {
-              setReviews(data || []);
-              setTotalReviews(count || 0);
-            }
-          } catch (err) {
-            console.error(err);
-            setError("Failed to load reviews.");
-          }
-          setLoading(false);
+            setLoading(false);
         };
-    
+
         fetchReviews();
-      }, [page]);
+    }, [page]);
 
     const handleNextPage = () => {
         if ((page + 1) * REVIEWS_PER_PAGE < totalReviews) {
@@ -68,16 +68,16 @@ const ProfilePage: React.FC = () => {
 
     const removeReview = async (gameId: number) => {
         if (!user) return;
-    
+
         try {
             // Call API to remove review
             const { error } = await removeUserReview(user, gameId);
             if (error) throw error;
-    
+
             // Update UI by filtering out deleted review
             setReviews((prevReviews) => prevReviews.filter(review => review.game_id !== gameId));
             setTotalReviews((prevCount) => Math.max(prevCount - 1, 0));
-    
+
             console.log("Review removed successfully!");
         } catch (err) {
             console.error("Failed to delete review:", err);
@@ -90,16 +90,25 @@ const ProfilePage: React.FC = () => {
 
     return (
         <div className="profile-container">
-            <h1>My Reviews</h1>
+
+            <div className="profile-details">
+                <img className="profile-image" src="./default-profile.jpg" alt="" />
+                <div className="profile-title">
+                    <h1>My Reviews</h1>
+                    <button className="follow-btn">Follow</button>
+                    <button className="profile-option-btn">...</button>
+                </div>
+
+            </div>
             {loading && <p>Loading reviews...</p>}
             {error && <p className="error">{error}</p>}
             {!loading && !error && reviews.length === 0 && <p>No reviews found.</p>}
 
             <div className="review-grid">
                 {reviews.map((review) => (
-                    <div key={`${review.user_id}-${review.game_id}`}  className="review-card">
+                    <div key={`${review.user_id}-${review.game_id}`} className="review-card">
                         <img onClick={() => removeReview(review.game_id)} className="delete-icon" src="/deleteIcon.svg" alt="Delete Icon" width={24} height={24} />
-                        <img onClick={()=> {handleGameClick(review.game_id)}} className="card-cover" src={review.games.cover_url} alt={review.games.game_title} />
+                        <img onClick={() => { handleGameClick(review.game_id) }} className="card-cover" src={review.games.cover_url} alt={review.games.game_title} />
                         <div
                             className="rating-badge"
                             style={{ backgroundColor: getRatingColor(review.rating) }}

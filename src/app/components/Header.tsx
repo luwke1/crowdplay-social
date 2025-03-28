@@ -49,7 +49,7 @@ const Header = () => {
 
   return (
     <div className="header">
-      <div className="search">
+      <div className="search-bar">
         <img src="/search.svg" alt="" />
         <input onKeyDown={handleSearch} type="text" />
       </div>
