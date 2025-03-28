@@ -19,6 +19,8 @@
 .profile-details {
     padding: 40px;
     display: flex;
+    height: 200px;
+    margin-bottom: 20px;
 }
 
 .profile-title {
@@ -28,6 +30,7 @@
     grid-template-columns: 1fr auto auto;
     column-gap: 15px;
     align-items: center;
+    margin-bottom: 10px;
 }
 
 .follow-btn {
@@ -62,6 +65,20 @@
     cursor: pointer;
     background-color: black;
     color: white;
+}
+
+/* Profile Stats */
+.profile-stats {
+    width: 100%;
+    display: inline-flex;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    justify-content: center;
+    gap: 20px;
+}
+.profile-stats > div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 /* Review Grid */

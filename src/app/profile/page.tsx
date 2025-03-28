@@ -90,16 +90,34 @@ const ProfilePage: React.FC = () => {
 
     return (
         <div className="profile-container">
-
             <div className="profile-details">
                 <img className="profile-image" src="./default-profile.jpg" alt="" />
-                <div className="profile-title">
-                    <h1>My Reviews</h1>
-                    <button className="follow-btn">Follow</button>
-                    <button className="profile-option-btn">...</button>
-                </div>
+                <div>
+                    <div className="profile-title">
+                        <h1>My Reviews</h1>
+                        <button className="follow-btn">Follow</button>
+                        <button className="profile-option-btn">...</button>
+                    </div>
+                    <div className="profile-stats">
+                        <div>
+                            <span>0</span>
+                            <span>Followers</span>
+                        </div>
+                        <div>
+                            <span>0</span>
+                            <span>Following</span>
+                        </div>
+                        <div>
+                            <span>{totalReviews}</span>
+                            <span>Reviews</span>
+                        </div>
+                    </div>
 
+                </div>
             </div>
+
+            <hr />
+
             {loading && <p>Loading reviews...</p>}
             {error && <p className="error">{error}</p>}
             {!loading && !error && reviews.length === 0 && <p>No reviews found.</p>}

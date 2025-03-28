@@ -2,12 +2,14 @@
 .main-body {
     padding: 20px;
     max-width: 1200px;
-    margin: 45px auto;
+    margin: 45px auto;}
+
+.game-list-container {
+    margin-bottom: 60px;
 }
 
-
 .game-list-container h2 {
-    margin-bottom: 20px;
+    /* margin-bottom: 20px; */
     font-size: 2rem;
     color: #ffffff;
 }
@@ -32,6 +34,7 @@
     color: white;
     cursor: pointer;
 }
+
 
 
 .game-list {
