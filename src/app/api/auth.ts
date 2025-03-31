@@ -32,7 +32,6 @@ export const logout = async () => {
 // Get the current user
 export const getCurrentUser = async () => {
   const { data: { user }, error } = await supabase.auth.getUser();
-  console.log(user);
   if (error) throw error;
   return user;
 };
