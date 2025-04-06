@@ -10,6 +10,7 @@ const FALLBACK_COVER_URL = "";
 
 let accessToken = "";
 
+// This function retrieves an access token from the Twitch API using client credentials.
 const getAccessToken = async () => {
   if (accessToken) return accessToken;
   const response = await axios.post(TOKEN_URL, null, {
@@ -23,11 +24,7 @@ const getAccessToken = async () => {
   return accessToken;
 };
 
-const getReleaseYear = (unixTimestamp: any) => {
-  if (!unixTimestamp) return "Unknown";
-  return new Date(unixTimestamp * 1000).getFullYear();
-};
-
+// This function handles GET requests to the IGDB API, allowing for searching games by name, fetching game details by ID, and retrieving popular or latest games.
 export async function GET(req: Request) {
   try {
     const token = await getAccessToken();
@@ -35,7 +32,7 @@ export async function GET(req: Request) {
     const page = Number(url.searchParams.get("page")) || 1;
     const offset = (page - 1) * 20;
     const gameId = url.searchParams.get("id");
-    const searchTerm = url.searchParams.get("q"); // Search query
+    const searchTerm = url.searchParams.get("q");
     const requestType = url.searchParams.get("type");
 
     if (gameId) {

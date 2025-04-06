@@ -91,11 +91,10 @@ const ProfilePage: React.FC = () => {
     return (
         <div className="profile-container">
             <div className="profile-details">
-                <img className="profile-image" src="./default-profile.jpg" alt="" />
+                <img className="profile-image" src="/default-profile.jpg" alt="" />
                 <div>
                     <div className="profile-title">
                         <h1>My Reviews</h1>
-                        <button className="follow-btn">Follow</button>
                         <button className="profile-option-btn">...</button>
                     </div>
                     <div className="profile-stats">
