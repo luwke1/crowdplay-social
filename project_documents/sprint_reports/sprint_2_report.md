@@ -1,6 +1,7 @@
 # Sprint 2 Report
 
-**Video Link:** *TBD*
+**Video Link:**
+https://youtu.be/jEB7HrnCbx4
 
 ## What's New (User Facing)
 
