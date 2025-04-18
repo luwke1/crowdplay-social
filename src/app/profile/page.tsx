@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getCurrentUser } from "@/api/auth";
+import { getAccountDetails } from "@/api/users";
 import { removeUserReview, getUserReviews } from "@/api/reviews";
 import "./profile.css";
 
@@ -23,6 +24,9 @@ const ProfilePage: React.FC = () => {
     const [page, setPage] = useState<number>(0);
     const [totalReviews, setTotalReviews] = useState<number>(0);
 
+    const [followersCount, setFollowersCount] = useState<number>(0);
+    const [followingCount, setFollowingCount] = useState<number>(0);
+
     useEffect(() => {
         const fetchReviews = async () => {
             setLoading(true);
@@ -35,6 +39,8 @@ const ProfilePage: React.FC = () => {
                     return;
                 }
                 setUser(currentUser);
+
+                fetchAccountDetails(currentUser.id);
 
                 const { data, count, error: reviewError } = await getUserReviews(currentUser.id, page, REVIEWS_PER_PAGE);
 
@@ -53,6 +59,19 @@ const ProfilePage: React.FC = () => {
 
         fetchReviews();
     }, [page]);
+
+    const fetchAccountDetails = async (currentUserID:string) => {
+            try {
+    
+                const counts = await getAccountDetails(currentUserID);
+                if (counts) {
+                    setFollowersCount(counts.followers ?? 0);
+                    setFollowingCount(counts.following ?? 0);
+                }
+            } catch (err) {
+                console.error("Failed to fetch counts:", err);
+            }
+        };
 
     const handleNextPage = () => {
         if ((page + 1) * REVIEWS_PER_PAGE < totalReviews) {
@@ -99,11 +118,11 @@ const ProfilePage: React.FC = () => {
                     </div>
                     <div className="profile-stats">
                         <div>
-                            <span>0</span>
+                            <span>{followersCount}</span>
                             <span>Followers</span>
                         </div>
                         <div>
-                            <span>0</span>
+                            <span>{followingCount}</span>
                             <span>Following</span>
                         </div>
                         <div>

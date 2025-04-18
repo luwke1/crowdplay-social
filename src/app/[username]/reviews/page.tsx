@@ -5,6 +5,8 @@ import { getReviewsUsername } from "@/api/reviews";
 import "@/profile/profile.css";
 import { useParams, useRouter } from "next/navigation";
 
+import { getAccountDetails, getIdByUsername } from "@/api/users";
+
 import { followUser, unfollowUser, isFollowingUser } from "@/api/follow";
 import { useUser } from "@/context/UserContext";
 
@@ -16,7 +18,7 @@ export default function ReviewsPage() {
     const { user } = useUser();
 
     const { username } = useParams() as { username: string };
-    
+
     const [reviews, setReviews] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [page, setPage] = useState<number>(0);
@@ -25,11 +27,29 @@ export default function ReviewsPage() {
     const [isFollowing, setIsFollowing] = useState<boolean>(false);
     const [checkingFollowStatus, setCheckingFollowStatus] = useState<boolean>(true);
 
+    const [followersCount, setFollowersCount] = useState<number>(0);
+    const [followingCount, setFollowingCount] = useState<number>(0);
+
 
     const getRatingColor = (rating: number) => {
         if (rating >= 7) return "#3ca62b";
         if (rating >= 4) return "#ffbf00";
         return "#e74c3c";
+    };
+
+    const fetchAccountDetails = async () => {
+        try {
+            const profileUserId = await getIdByUsername(username); // convert username to user id
+            if (!profileUserId) return;
+
+            const counts = await getAccountDetails(profileUserId);
+            if (counts) {
+                setFollowersCount(counts.followers ?? 0);
+                setFollowingCount(counts.following ?? 0);
+            }
+        } catch (err) {
+            console.error("Failed to fetch counts:", err);
+        }
     };
 
 
@@ -58,12 +78,21 @@ export default function ReviewsPage() {
     }, [page]);
 
     useEffect(() => {
+        if (username) {
+            fetchAccountDetails();
+        }
+    }, [username]);
+
+    useEffect(() => {
         const fetchFollowStatus = async () => {
             if (!user || !username || user.username === username) return;
+
             setCheckingFollowStatus(true);
+            console.log("🔍 Checking follow status for:", user.id, "→", username);
 
             try {
                 const { isFollowing } = await isFollowingUser(user.id, username);
+                console.log("🔍 Follow status:", isFollowing);
                 setIsFollowing(isFollowing);
             } catch (err) {
                 console.error("Failed to check follow status:", err);
@@ -72,7 +101,9 @@ export default function ReviewsPage() {
             setCheckingFollowStatus(false);
         };
 
-        fetchFollowStatus();
+        if (user && username && user.username !== username) {
+            fetchFollowStatus();
+        }
     }, [user, username]);
 
     const handleFollowToggle = async () => {
@@ -86,6 +117,8 @@ export default function ReviewsPage() {
                 await followUser(user.id, username);
                 setIsFollowing(true);
             }
+
+            await fetchAccountDetails(); // Update follower/following counts
         } catch (err) {
             console.error("Error updating follow state:", err);
         }
@@ -124,11 +157,11 @@ export default function ReviewsPage() {
                     </div>
                     <div className="profile-stats">
                         <div>
-                            <span>0</span>
+                            <span>{followersCount}</span>
                             <span>Followers</span>
                         </div>
                         <div>
-                            <span>0</span>
+                            <span>{followingCount}</span>
                             <span>Following</span>
                         </div>
                         <div>

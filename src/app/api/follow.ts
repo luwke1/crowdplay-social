@@ -32,13 +32,22 @@ export const unfollowUser = async (followerId: string, followedUsername: string)
 
 export async function isFollowingUser(followerId: string, followingUsername: string) {
     const followedId = await getIdByUsername(followingUsername);
+    if (!followedId) {
+        console.error("No user found with username:", followingUsername);
+        return { isFollowing: false };
+    }
 
     const { data, error } = await supabase
         .from("followers")
-        .select("id")
+        .select("follower_id")
         .eq("follower_id", followerId)
         .eq("followed_id", followedId)
-        .single();
+        .maybeSingle();
 
-    return { isFollowing: !!data, error };
+    if (error) {
+        console.error("Error checking follow status:", error.message);
+        return { isFollowing: false };
+    }
+
+    return { isFollowing: !!data };
 }

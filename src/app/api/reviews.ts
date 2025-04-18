@@ -86,6 +86,7 @@ export const upsertUserReview = async (
     }
 };
 
+
 export const removeUserReview = async (user: any, gameId: number) => {
     try {
         const { error } = await supabase
