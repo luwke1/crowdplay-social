@@ -1,11 +1,84 @@
 /* Profile Container */
 .profile-container {
-
     padding: 20px;
-    max-width: 1200px;
+    max-width: 1000px;
     margin: 0 auto;
-    margin-top: 30px;
+    margin-top: 40px;
     color: white;
+}
+
+.profile-image {
+    margin-right: 40px;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.profile-details {
+    padding: 40px;
+    display: flex;
+    height: 200px;
+    margin-bottom: 20px;
+}
+
+.profile-title {
+    font-size: 15px;
+    height: 50%;
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    column-gap: 15px;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.follow-btn {
+    font-size: 20px;
+    width: fit-content;
+    height: fit-content;
+    border-radius: 5px;
+    color: white;
+    background-color: #9651ac;
+    transition: all 0.3s;
+}
+
+.follow-btn:hover {
+    cursor: pointer;
+    background-color: #7a3e8c;
+}
+
+.profile-option-btn {
+    font-size: 40px;
+    padding: 0px;
+    line-height: 1px;
+    display: inline-flex;
+    letter-spacing: -2px;
+    padding-left: 1.5px;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    color: black;
+    transition: all 0.3s;
+}
+.profile-option-btn:hover {
+    cursor: pointer;
+    background-color: black;
+    color: white;
+}
+
+/* Profile Stats */
+.profile-stats {
+    width: 100%;
+    display: inline-flex;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    justify-content: center;
+    gap: 20px;
+}
+.profile-stats > div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 /* Review Grid */
@@ -23,6 +96,13 @@
     border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    transition: outline 0.5s;
+}
+
+.review-card:hover {
+    cursor: pointer;
+    outline: 1px solid white;
+    outline-offset: -1px;
 }
 
 .review-card .delete-icon {

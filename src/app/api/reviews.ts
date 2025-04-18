@@ -15,6 +15,26 @@ export const getUserReview = async (userId: string, gameId: number) => {
     return data;
 };
 
+
+export const getUserReviews = async (userId: string, page: number, limit: number) => {
+    const { data, count, error } = await supabase
+        .from("reviews")
+        .select(
+            `game_id, rating, review_text, created_at, games(game_title, cover_url)`,
+            { count: "exact" }
+        )
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .range(page * limit, (page + 1) * limit - 1);
+
+    if (error) {
+        console.error("Error fetching user reviews:", error.message);
+        return { data: [], count: 0, error };
+    }
+
+    return { data, count, error: null };
+};
+
 export const upsertUserReview = async (
     userId: string,
     gameId: number,
@@ -66,6 +86,7 @@ export const upsertUserReview = async (
     }
 };
 
+
 export const removeUserReview = async (user: any, gameId: number) => {
     try {
         const { error } = await supabase
@@ -90,3 +111,34 @@ export const getGameReviews = async (gameId: number) => {
     }
     return data;
 }
+
+export const getReviewsUsername = async (username: any, page: number, limit: number) => {
+    try {
+        // Fetch user ID based on username
+        const { data: userData, error: userError } = await supabase
+            .from("profiles")
+            .select("id")
+            .eq("username", username)
+            .single();
+
+        if (userError || !userData) {
+            console.error("Error fetching user ID:", userError?.message || "User not found.");
+            return { data: [], count: 0, error: userError || new Error("User not found") };
+        }
+
+        const userId = userData.id;
+
+        // Fetch reviews for the user
+        const { data, count, error } = await getUserReviews(userId, page, limit);
+
+        if (error) {
+            console.error("Error fetching user reviews:", error.message);
+            return { data: [], count: 0, error };
+        }
+
+        return { data, count, error: null };
+    } catch (err) {
+        console.error("Unexpected error:", err);
+        return { data: [], count: 0, error: err };
+    }
+};

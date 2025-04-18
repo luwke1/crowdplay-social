@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "../utils/supabase";
@@ -47,8 +49,8 @@ const Header = () => {
 
   return (
     <div className="header">
-      <div className="search">
-        <img src="search.svg" alt="" />
+      <div className="search-bar">
+        <img src="/search.svg" alt="" />
         <input onKeyDown={handleSearch} type="text" />
       </div>
       <a href="/">Games</a>

@@ -18,6 +18,12 @@ h2 {
   margin-top: 20px;
 }
 
+hr{
+  border: 1px solid #ffffff;
+  margin: 5px 0px 15px 0px;
+}
+
+
 
 /* ------MAIN-------- */
 .main-body{

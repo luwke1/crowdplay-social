@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { getCurrentUser } from "@/api/auth";
 import { getUserReview, upsertUserReview, getGameReviews } from "@/api/reviews";
 import axios from "axios";
@@ -16,6 +16,7 @@ interface Game {
 }
 
 export default function GamePage() {
+	const router = useRouter();
 	const { id } = useParams();
 	const [game, setGame] = useState<Game | null>(null);
 	const [error, setError] = useState<string | null>(null);
@@ -139,6 +140,10 @@ export default function GamePage() {
 		setReviewText(event.target.value);
 	};
 
+	const viewUser = (username:string) => {
+		router.push(`/${username}/reviews`);
+	};
+
 
 	return (
 		<div className="game-page">
@@ -180,7 +185,7 @@ export default function GamePage() {
 							</div>
 
 							{/* Review Form */}
-							<div className="review-form">
+							<div className="game-review-form">
 								<h3>Leave a Review</h3>
 								<textarea onChange={handleReviewChange} placeholder="Write your review (optional)..." />
 								<button onClick={() => setNewRating(reviews[0].rating, reviewText)} disabled={!user || reviews.length <= 0 || reviewText.trim().length < 2}>Submit Review</button>
@@ -190,16 +195,16 @@ export default function GamePage() {
 
 
 					</div>
-					<div className="reviews-container">
-						<h3 className="reviews-title">User Reviews</h3>
+					<div className="game-reviews-container">
+						<h3 className="game-reviews-title">User Reviews</h3>
 						{gameReviews.length > 0 ? (
 							gameReviews.map((review) => (
-								<div key={`${review.user_id}-${review.game_id}`} className="review-card">
-									<div className="review-header">
-										<h4 className="review-username">{review.username}</h4>
-										<span className="review-rating">{review.rating}/10</span>
+								<div key={`${review.user_id}-${review.game_id}`} className="game-review-card">
+									<div className="game-review-header">
+										<h4 onClick={() => {viewUser(review.username)}} className="game-review-username">{review.username}</h4>
+										<span className="game-review-rating">{review.rating}/10</span>
 									</div>
-									<p className="review-text">{review.review_text}</p>
+									<p className="game-review-text">{review.review_text}</p>
 								</div>
 							))
 						) : (
