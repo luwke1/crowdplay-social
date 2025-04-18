@@ -5,18 +5,26 @@ import { getReviewsUsername } from "@/api/reviews";
 import "@/profile/profile.css";
 import { useParams, useRouter } from "next/navigation";
 
+import { followUser, unfollowUser, isFollowingUser } from "@/api/follow";
+import { useUser } from "@/context/UserContext";
+
 const REVIEWS_PER_PAGE = 50;
 
 export default function ReviewsPage() {
     const router = useRouter();
+
+    const { user } = useUser();
+
+    const { username } = useParams() as { username: string };
     
-    const { username } = useParams();
-    const [user, setUser] = useState<any>(null);
     const [reviews, setReviews] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
-    const [error, setError] = useState<string | null>(null);
     const [page, setPage] = useState<number>(0);
     const [totalReviews, setTotalReviews] = useState<number>(0);
+
+    const [isFollowing, setIsFollowing] = useState<boolean>(false);
+    const [checkingFollowStatus, setCheckingFollowStatus] = useState<boolean>(true);
+
 
     const getRatingColor = (rating: number) => {
         if (rating >= 7) return "#3ca62b";
@@ -24,29 +32,64 @@ export default function ReviewsPage() {
         return "#e74c3c";
     };
 
+
     useEffect(() => {
         const fetchReviews = async () => {
             setLoading(true);
-            setError(null);
             try {
-
                 const { data, count, error: reviewError } = await getReviewsUsername(username, page, REVIEWS_PER_PAGE);
 
                 if (reviewError) {
-                    setError("Error fetching reviews.");
+                    console.error("Error fetching reviews:");
                 } else {
                     setReviews(data || []);
                     setTotalReviews(count || 0);
                 }
             } catch (err) {
                 console.error(err);
-                setError("Failed to load reviews.");
             }
             setLoading(false);
         };
+        console.log(user, "USER ID");
+
+
 
         fetchReviews();
     }, [page]);
+
+    useEffect(() => {
+        const fetchFollowStatus = async () => {
+            if (!user || !username || user.username === username) return;
+            setCheckingFollowStatus(true);
+
+            try {
+                const { isFollowing } = await isFollowingUser(user.id, username);
+                setIsFollowing(isFollowing);
+            } catch (err) {
+                console.error("Failed to check follow status:", err);
+            }
+
+            setCheckingFollowStatus(false);
+        };
+
+        fetchFollowStatus();
+    }, [user, username]);
+
+    const handleFollowToggle = async () => {
+        if (!user) return;
+
+        try {
+            if (isFollowing) {
+                await unfollowUser(user.id, username);
+                setIsFollowing(false);
+            } else {
+                await followUser(user.id, username);
+                setIsFollowing(true);
+            }
+        } catch (err) {
+            console.error("Error updating follow state:", err);
+        }
+    };
 
 
     const handleNextPage = () => {
@@ -72,7 +115,11 @@ export default function ReviewsPage() {
                 <div>
                     <div className="profile-title">
                         <h1>{username} Reviews</h1>
-                        <button className="follow-btn">Follow</button>
+                        {user?.username !== username && !checkingFollowStatus && (
+                            <button className="follow-btn" onClick={handleFollowToggle}>
+                                {isFollowing ? "Unfollow" : "Follow"}
+                            </button>
+                        )}
                         <button className="profile-option-btn">...</button>
                     </div>
                     <div className="profile-stats">
