@@ -16,7 +16,7 @@ This sprint focused on introducing social connectivity to CrowdPlay. We implemen
 
 ## Unfinished Work
 
-- Minor UI polishing for profile layouts and follow/unfollow animations will be addressed next sprint.
+- Minor UI polishing for profile layouts and follow/unfollow animations.
 
 ## Completed Issues/User Stories
 
