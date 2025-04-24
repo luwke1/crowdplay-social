@@ -55,6 +55,7 @@ const Header = () => {
       </div>
       <a href="/">Games</a>
       <a href="/friends">Friends</a>
+      <a href="/recommendations">Recommendations</a>
       <a href="/profile">Profile</a>
 
       {user ? (

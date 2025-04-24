@@ -29,6 +29,11 @@ export default function RecommendationsPage() {
                 <div className='searchArea'>
                     <div><input minLength={5} maxLength={80} placeholder='ex: list games that (feel like im in the future)'/></div>
                 </div>
+                <div>
+                    <button className="generateBtn">
+                        Generate
+                    </button>
+                </div>
             </div>
             <div className='recSection'>
 

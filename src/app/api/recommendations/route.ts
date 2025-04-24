@@ -1,29 +1,35 @@
-import axios from 'axios';
-import { NextResponse } from 'next/server';
+import { GoogleGenAI } from "@google/genai";
+import { NextResponse } from "next/server";
 
-import OpenAI from 'openai';
-
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-
-// Initialize OpenAI API
-const openai = new OpenAI({
-    apiKey: OPENAI_API_KEY,
+const ai = new GoogleGenAI({
+    apiKey: process.env.GEMINI_API_KEY || "",
 });
 
-async function generateRecommendations(prompt: string, retries = 0) {
-    try {
-        // Make API call to OpenAI
-        const completion = openai.chat.completions.create({
-            model: "gpt-4o",
-            store: true,
-            messages: [
-                { "role": "user", "content": prompt },
-                { "role": "system", "content": "You are a game recommendation assistant that only speaks JSON. List 10 games based on the user prompt and return JSON in the format of the game's title, release date, and non-spoiler description of why it fits. Do not write normal text." },
-            ],
-        });
-        completion.then((result) => console.log(result.choices[0].message));
+export async function POST(req: Request) {
+    const { prompt } = await req.json();
 
+    try {
+        const response = await ai.models.generateContent({
+            model: "gemini-2.0-flash",
+            contents: [
+                {
+                    role: "user",
+                    parts: [{ text: prompt }],
+                },
+            ],
+            config: {
+                systemInstruction: `You are a game recommendation assistant. 
+                Only reply in JSON format. Return exactly 10 games, each with a title, release date, and a non-spoiler reason why it fits. 
+                Do not use regular text or any explanation.`,
+            },
+        });
+
+        return NextResponse.json({ response: response.text });
     } catch (error) {
-        console.error("Error generating games:", error);
+        console.error("Error from Gemini:", error);
+        return NextResponse.json(
+            { error: "Failed to generate recommendations." },
+            { status: 500 }
+        );
     }
 }

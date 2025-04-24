@@ -45,6 +45,27 @@
     border-radius: 20px;
 }
 
+.searchArea{
+    margin-bottom: 30px;
+}
+
+.generateBtn{
+    background-color: #444;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    margin-left: 10px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 14px;
+    transition: 0.3s;
+}
+
+.generateBtn:hover {
+    background-color: #555;
+    box-shadow: 0px 0px 5px 1px white;
+}
+
 .wave:nth-child(2) {
     animation-delay: 0.1s;
 }
