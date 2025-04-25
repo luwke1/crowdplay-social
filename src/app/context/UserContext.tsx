@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { getCurrentUser } from "@/api/auth";
+import { supabase } from "@/utils/supabase";
 
 type User = any;
 
@@ -16,8 +16,8 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
     useEffect(() => {
         const getUser = async () => {
-            const user = await getCurrentUser();
-            setUser(user ?? null);
+            const { data, error } = await supabase.auth.getUser();
+            setUser(data.user ?? null);
             setLoading(false);
         };
 

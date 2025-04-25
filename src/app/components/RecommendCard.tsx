@@ -6,20 +6,21 @@ import "./RecommendCard.css";
 
 interface Recommendation {
     title: string;
-    releaseDate: string;
-    description: string;
+    release_date: string;
+    reason: string;
 }
 
 
 export default function RecommendCard({ recommendation }: { recommendation: Recommendation }) {
-    const { title, releaseDate, description } = recommendation;
+    const { title, release_date, reason } = recommendation;
+    console.log(recommendation)
     return (
-        <>
         <div className='recommendationCard'>
-            <div className='recTitle'>{title}</div>
-            <div className='recReleaseDate'>{releaseDate}</div>
-            <div className='recDescription'>{description}</div>
+            <img src="/" alt="" />
+            <div className='recDetails'>
+                <h4>{title} ({release_date})</h4>
+                <p>{reason}</p>
+            </div>
         </div>
-        </>
     );
 };
