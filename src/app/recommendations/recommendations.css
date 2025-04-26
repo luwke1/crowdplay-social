@@ -7,23 +7,24 @@
     justify-content: center;
     flex-wrap: wrap;
 }
-.recommendationsBody h1{
+
+.recommendationsBody h1 {
     font-size: 30px;
-    margin-bottom: 30px;
+    margin-bottom: 40px;
     text-align: center;
     color: white;
 }
 
 .recSection {
     width: 900px;
-    margin-bottom: 40px;
+    margin-bottom: 20px;
     display: flex;
     gap: 20px;
     align-items: center;
     flex-direction: column;
 }
 
-.recSettings{
+.recSettings {
     width: 80%;
     margin-bottom: 40px;
     display: flex;
@@ -32,7 +33,7 @@
     flex-direction: column;
 }
 
-.recSettings input{
+.recSettings input {
     width: 600px;
     height: 30px;
     border-radius: 10px;
@@ -56,11 +57,11 @@
     border-radius: 20px;
 }
 
-.searchArea{
-    margin-bottom: 30px;
+.searchArea {
+    margin-bottom: 10px;
 }
 
-.generateBtn{
+.generateBtn {
     background-color: #444;
     color: white;
     border: none;
@@ -74,7 +75,32 @@
 
 .generateBtn:hover {
     background-color: #555;
-    box-shadow: 0px 0px 5px 1px white;
+    /* box-shadow: 0px 0px 5px 1px white; */
+}
+
+.loadingBarContainer {
+    width: 100%;
+    background: #eee;
+    height: 5px;
+    margin-top: 10px;
+    overflow: hidden;
+}
+
+.loadingBar {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to right, #4facfe, #00f2fe);
+    animation: loadingAnim 2s linear infinite;
+}
+
+@keyframes loadingAnim {
+    0% {
+        transform: translateX(-100%);
+    }
+
+    100% {
+        transform: translateX(100%);
+    }
 }
 
 .wave:nth-child(2) {
