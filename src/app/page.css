@@ -22,11 +22,13 @@
     margin-top: 20px;
 }
 .pagination-buttons button{
-    border-radius: 2px;
+    border-radius: 10px;
     height: 30px;
+    width: 300px;
     padding: 5px 20px;
-    background-color: rgb(255, 255, 255);
-    transition: background-color 0.3s;
+    background-color: #27272a;
+    color: white;
+    transition: background-color 0.5s;
 }
 
 .pagination-buttons button:hover{
@@ -35,12 +37,9 @@
     cursor: pointer;
 }
 
-
-
 .game-list {
+    color: white;
     display: grid;
-    height: 330px;
-    /* grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); */
     grid-template-columns: repeat(10, 0.1fr);
     gap: 10px;
 }

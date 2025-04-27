@@ -17,7 +17,7 @@ interface Recommendation {
 export default function RecommendCard({ recommendation }: { recommendation: Recommendation }) {
     const { title, year, reason, igdb } = recommendation;
     console.log(recommendation)
-    const sourceImage = igdb?.cover?.url || "/default-profile.jpg";
+    const sourceImage = igdb?.cover?.url.replace("t_thumb", "t_cover_big") || "/default-profile.jpg";
     const router = useRouter();
 
     const handleGameClick = () => {

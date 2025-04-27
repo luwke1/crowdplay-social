@@ -40,15 +40,17 @@ export default function SearchPage() {
 
     return (
         <div className="main-body">
+            
             {loading ? (
                 <p>Loading...</p>
             ) : (
                 <div className="search-results">
+                    <h1>Search Results for "{query}"</h1>
                     {results.map((game: any) => (
                         <div onClick={()=>handleGameClick(game.id)} className="result-card" key={game.id}>
                             <div>
                                 {game.cover && game.cover.url ? (
-                                    <img src={game.cover.url} alt={game.name} width="100" />
+                                    <img src={game.cover.url.replace("t_thumb", "t_cover_big")} alt={game.name} width="100" />
                                 ) : (
                                     <img src="/default-cover.jpg" alt="Default Cover" width="100" />
                                 )}
