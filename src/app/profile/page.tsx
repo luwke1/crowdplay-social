@@ -20,6 +20,7 @@ const ProfilePage: React.FC = () => {
     const [user, setUser] = useState<any>(null);
     const [reviews, setReviews] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
+
     const [error, setError] = useState<string | null>(null);
     const [page, setPage] = useState<number>(0);
     const [totalReviews, setTotalReviews] = useState<number>(0);
@@ -28,10 +29,12 @@ const ProfilePage: React.FC = () => {
     const [followingCount, setFollowingCount] = useState<number>(0);
 
     useEffect(() => {
+        // Fetch user reviews and account details when component mounts or page changes
         const fetchReviews = async () => {
             setLoading(true);
             setError(null);
             try {
+                // Get current user
                 const currentUser = await getCurrentUser();
                 if (!currentUser) {
                     setError("No user logged in.");
@@ -40,15 +43,16 @@ const ProfilePage: React.FC = () => {
                 }
                 setUser(currentUser);
 
-                fetchAccountDetails(currentUser.id);
+                await fetchAccountDetails(currentUser.id);
 
-                const { data, count, error: reviewError } = await getUserReviews(currentUser.id, page, REVIEWS_PER_PAGE);
+                // Fetch paginated user reviews
+                const { data, error: reviewError } = await getUserReviews(currentUser.id, page, REVIEWS_PER_PAGE);
 
+                // Update states
                 if (reviewError) {
                     setError("Error fetching reviews.");
                 } else {
                     setReviews(data || []);
-                    setTotalReviews(count || 0);
                 }
             } catch (err) {
                 console.error(err);
@@ -62,9 +66,10 @@ const ProfilePage: React.FC = () => {
 
     const fetchAccountDetails = async (currentUserID:string) => {
             try {
-    
+                // Fetch account details like followers and following counts
                 const counts = await getAccountDetails(currentUserID);
                 if (counts) {
+                    setTotalReviews(counts.reviewCount ?? 0);
                     setFollowersCount(counts.followers ?? 0);
                     setFollowingCount(counts.following ?? 0);
                 }

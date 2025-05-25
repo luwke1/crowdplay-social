@@ -3,7 +3,11 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import RecommendCard from "@/components/RecommendCard";
+import { getCurrentUser } from "@/api/auth";
 import "./recommendations.css";
+import FormGroup from '@mui/material/FormGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Switch from '@mui/material/Switch';
 
 type GameRecommendation = {
   title: string;
@@ -16,10 +20,24 @@ export default function RecommendationsPage() {
   const [prompt, setPrompt] = useState("");
   const [recommendations, setRecommendations] = useState<GameRecommendation[]>([]);
   const [loading, setLoading] = useState(false);
+  const [useProfile, setUseProfile] = useState(false);
+  const [user, setUser] = useState<any>(null);
 
 
   useEffect(() => {
+    const fetchUser = async () => {
+      const currentUser = await getCurrentUser();
+      if (!currentUser) {
+        setLoading(false);
+        return;
+      }
+      setUser(currentUser);
+    }
+
+    fetchUser();
+
     const stored = localStorage.getItem("crowdplay_recommendations");
+
     if (stored) {
       setRecommendations(JSON.parse(stored));
     } else {
@@ -35,7 +53,7 @@ export default function RecommendationsPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({ prompt, useProfile, userId: user?.id || null }),
       });
 
       if (!res.ok) {
@@ -64,6 +82,8 @@ export default function RecommendationsPage() {
           </div>
         )}
 
+
+
         {/* Search input */}
         <div className="searchArea">
           <div>
@@ -76,13 +96,19 @@ export default function RecommendationsPage() {
               value={prompt}
             />
           </div>
+
         </div>
+        <FormControlLabel onChange={() => setUseProfile(prev => !prev)} control={<Switch />} label="Generate Based on Your Reviews" />
 
         <div>
           <button
             className="generateBtn"
             onClick={generateRecommendations}
-            disabled={loading || prompt.length < 5}
+            disabled={
+              loading ||
+              prompt.length < 5 ||
+              (useProfile && !user) // disable if no logged in user
+            }
           >
             {loading ? "Generating..." : "Generate"}
           </button>

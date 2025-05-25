@@ -1,45 +1,48 @@
-import {supabase} from "@/utils/supabase";
+import { supabase } from "@/utils/supabase";
 
 export const getIdByUsername = async (username: string) => {
-    try {
-        const {data, error} = await supabase
-            .from("profiles")
-            .select("id")
-            .eq("username", username)
-            .single();
+  try {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("username", username)
+      .single();
 
-        if (error) throw error;
+    if (error) throw error;
 
-        return data.id;
-    } catch (err) {
-        console.error("Error fetching user ID:", err);
-        throw err;
-    }
-}
+    return data.id;
+  } catch (err) {
+    console.error("Error fetching user ID:", err);
+    throw err;
+  }
+};
 
 export const getAccountDetails = async (userId: string) => {
-    try {
-        const { count: followingCount, error: followersError } = await supabase
-            .from("followers")
-            .select("*", { count: "exact", head: true })
-            .eq("follower_id", userId);
-        
-        const {count: followersCount, error: followingError} = await supabase
-            .from("followers")
-            .select("*", { count: "exact", head: true })
-            .eq("followed_id", userId);
+  // Count the number of reviews for the user
+  const { count: reviewCount, error: reviewError } = await supabase
+    .from("reviews")
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", userId);
 
-        if (followersError || followingError) {
-            console.error("Error fetching account details:", followersError || followingError);
-            return null;
-        }
+  // Count followers / following
+  const { count: followingCount, error: followErr1 } = await supabase
+    .from("followers")
+    .select("*", { count: "exact", head: true })
+    .eq("follower_id", userId);
 
-        return {
-            followers: followersCount,
-            following: followingCount,
-        };
-    } catch (err) {
-        console.error("Unexpected error fetching account details:", err);
-        return null;
-    }
-}
+  const { count: followersCount, error: followErr2 } = await supabase
+    .from("followers")
+    .select("*", { count: "exact", head: true })
+    .eq("followed_id", userId);
+
+  if (reviewError || followErr1 || followErr2) {
+    console.error("Error fetching account details:", reviewError ?? followErr1 ?? followErr2);
+    return null;
+  }
+
+  return {
+    reviewCount: reviewCount ?? 0,
+    followers: followersCount ?? 0,
+    following: followingCount ?? 0,
+  };
+};

@@ -24,6 +24,12 @@
     flex-direction: column;
 }
 
+.enableTaste{
+    color: white;
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
 .recSettings {
     width: 80%;
     margin-bottom: 40px;
