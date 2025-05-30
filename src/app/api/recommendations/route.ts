@@ -1,6 +1,8 @@
 import { GoogleGenAI } from "@google/genai";
 import { NextResponse } from "next/server";
 import { getUserReviews } from "@/api/reviews";
+import { buildSystemInstruction } from "@/utils/instructionBuilder";
+import { reviewsService } from "@/services/reviewsService";
 
 import axios from "axios";
 
@@ -20,45 +22,14 @@ const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 export async function POST(req: Request) {
     const { prompt, useProfile, userId } = await req.json();
 
-    let sysInstruction = `You are a game recommendation assistant.
-Only reply in JSON format. Return exactly 10 games, each with a title, year of release, and a non-spoiler reason why it fits the user's prompt. If no prompt, generate 10 random good games. 
-Do not use regular text or any explanation.`;
-
-    // If useProfile is true and userId is provided, modify the system instruction
+    // 2. Optionally fetch & format reviews
+    let reviewsFormatted: string | undefined;
     if (useProfile && userId) {
-        sysInstruction = `You are a game recommendation assistant.
-Only reply in JSON format. Return exactly 10 games, each with a title, year of release, and a non-spoiler reason why it fits the users disliked and liked games. If no prompt, generate 10 random good games. 
-Do not use regular text or any explanation.`;
-
-        const { data } = await getUserReviews(userId, 0, 1000, "rating", false);
-
-        if (data.length !== 0) {
-            let selectedReviews = data;
-
-            // If there are more than 45 reviews, select a mix of high, mid, and low ratings
-            if (data.length >= 45) {
-                const high = data.slice(0, 15);
-                const low = data.slice(-15);
-                const mid = data.slice(
-                    Math.floor((data.length - 15) / 2),
-                    Math.floor((data.length - 15) / 2) + 15
-                );
-                selectedReviews = [...high, ...mid, ...low];
-            }
-
-            // Format the reviews for the system instruction
-            const formattedReviews = selectedReviews
-                .map(
-                    (review: any) =>
-                        `{Game Title: ${review.games?.game_title} | User Rating: (${review.rating}/10) | Review Text: "${review.review_text}"}`
-                )
-                .join(",\n");
-            
-            // Add the formatted reviews to the system instruction
-            sysInstruction += `\n\nAlso, use the user's game reviews to inform your recommendations.
-The user has rated the following games like this. Please analyze their reviews and ratings to decide on a game they might like, also take into account games they dislike and hate:\n${formattedReviews}`;
-        }
+        const reviews = await reviewsService.fetchForUser(userId);
+        reviewsFormatted = reviewsService.formatReviews(reviews);
     }
+
+    const systemInstruction = buildSystemInstruction({ useProfile, formattedReviews: reviewsFormatted});
 
     try {
         // Generate content using Gemini AI
@@ -71,7 +42,7 @@ The user has rated the following games like this. Please analyze their reviews a
                 },
             ],
             config: {
-                systemInstruction: sysInstruction,
+                systemInstruction: systemInstruction,
                 responseMimeType: "application/json"
             },
         });
@@ -120,7 +91,6 @@ The user has rated the following games like this. Please analyze their reviews a
         );
     }
 }
-
 
 const getAccessToken = async () => {
     if (accessToken) return accessToken;
