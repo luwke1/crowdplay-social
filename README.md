@@ -1,4 +1,4 @@
-# Crowdplay 🎬
+# Crowdplay
 
 Crowdplay is a web app where you can browse games, write reviews, get personalized recommendations, and follow other players. I built it to practice full-stack development and see how AI could make recommendations feel more personal.
 
