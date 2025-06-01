@@ -21,7 +21,7 @@ Crowdplay-Social is a social platform for gamers to review, share, and discover 
 
 ## Skills Demonstrated
 
-- **User Authentication & Authorization**: Secure login, session handling, and role-based access control with Supabase.
+- **User Authentication & Authorization**: Login and session handling with Supabase.
 - **Backend Database Design**: Structured relational database using PostgreSQL.
 - **Next.js & Server-Side Rendering**: Optimized page loading and SEO-friendly architecture.
 - **REST API Handling**: Fetching and managing game data from IGDB.
