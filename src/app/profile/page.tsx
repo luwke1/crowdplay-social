@@ -1,92 +1,41 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useRouter } from "next/navigation";
-import { getCurrentUser } from "@/api/auth";
-import { getAccountDetails } from "@/api/users";
-import { removeUserReview, getUserReviews } from "@/api/reviews";
+import { removeUserReview } from "@/api/reviews";
+import { useProfileData } from "@/hooks/useProfileData";
+import ProfileStats from "@/components/ProfileStats";
+import ReviewCard from "@/components/ReviewCard";
+import Pagination from "@/components/Pagination";
 import "./profile.css";
 
 const REVIEWS_PER_PAGE = 50;
 
-const getRatingColor = (rating: number) => {
-    if (rating >= 7) return "#3ca62b";
-    if (rating >= 4) return "#ffbf00";
-    return "#e74c3c";
-};
-
 const ProfilePage: React.FC = () => {
     const router = useRouter();
-    const [user, setUser] = useState<any>(null);
-    const [reviews, setReviews] = useState<any[]>([]);
-    const [loading, setLoading] = useState<boolean>(false);
+    const [page, setPage] = React.useState<number>(0);
 
-    const [error, setError] = useState<string | null>(null);
-    const [page, setPage] = useState<number>(0);
-    const [totalReviews, setTotalReviews] = useState<number>(0);
-
-    const [followersCount, setFollowersCount] = useState<number>(0);
-    const [followingCount, setFollowingCount] = useState<number>(0);
-
-    useEffect(() => {
-        // Fetch user reviews and account details when component mounts or page changes
-        const fetchReviews = async () => {
-            setLoading(true);
-            setError(null);
-            try {
-                // Get current user
-                const currentUser = await getCurrentUser();
-                if (!currentUser) {
-                    setError("No user logged in.");
-                    setLoading(false);
-                    return;
-                }
-                setUser(currentUser);
-
-                await fetchAccountDetails(currentUser.id);
-
-                // Fetch paginated user reviews
-                const { data, error: reviewError } = await getUserReviews(currentUser.id, page, REVIEWS_PER_PAGE);
-
-                // Update states
-                if (reviewError) {
-                    setError("Error fetching reviews.");
-                } else {
-                    setReviews(data || []);
-                }
-            } catch (err) {
-                console.error(err);
-                setError("Failed to load reviews.");
-            }
-            setLoading(false);
-        };
-
-        fetchReviews();
-    }, [page]);
-
-    const fetchAccountDetails = async (currentUserID:string) => {
-            try {
-                // Fetch account details like followers and following counts
-                const counts = await getAccountDetails(currentUserID);
-                if (counts) {
-                    setTotalReviews(counts.reviewCount ?? 0);
-                    setFollowersCount(counts.followers ?? 0);
-                    setFollowingCount(counts.following ?? 0);
-                }
-            } catch (err) {
-                console.error("Failed to fetch counts:", err);
-            }
-        };
+    const {
+        user,
+        reviews,
+        loading,
+        error,
+        totalReviews,
+        followersCount,
+        followingCount,
+        setReviews,
+        setTotalReviews
+    } = useProfileData(page);
 
     const handleNextPage = () => {
         if ((page + 1) * REVIEWS_PER_PAGE < totalReviews) {
-            setPage(page + 1);
+            setPage(prev => prev + 1);
         }
     };
 
     const handlePrevPage = () => {
         if (page > 0) {
-            setPage(page - 1);
+            setPage(prev => prev - 1);
         }
     };
 
@@ -94,15 +43,11 @@ const ProfilePage: React.FC = () => {
         if (!user) return;
 
         try {
-            // Call API to remove review
             const { error } = await removeUserReview(user, gameId);
             if (error) throw error;
 
-            // Update UI by filtering out deleted review
-            setReviews((prevReviews) => prevReviews.filter(review => review.game_id !== gameId));
-            setTotalReviews((prevCount) => Math.max(prevCount - 1, 0));
-
-            console.log("Review removed successfully!");
+            setReviews(prev => prev.filter(review => review.game_id !== gameId));
+            setTotalReviews(prev => Math.max(prev - 1, 0));
         } catch (err) {
             console.error("Failed to delete review:", err);
         }
@@ -115,27 +60,17 @@ const ProfilePage: React.FC = () => {
     return (
         <div className="profile-container">
             <div className="profile-details">
-                <img className="profile-image" src="/default-profile.jpg" alt="" />
+                <img className="profile-image" src="/default-profile.jpg" alt="Profile" />
                 <div>
                     <div className="profile-title">
                         <h1>My Reviews</h1>
                         <button className="profile-option-btn">...</button>
                     </div>
-                    <div className="profile-stats">
-                        <div>
-                            <span>{followersCount}</span>
-                            <span>Followers</span>
-                        </div>
-                        <div>
-                            <span>{followingCount}</span>
-                            <span>Following</span>
-                        </div>
-                        <div>
-                            <span>{totalReviews}</span>
-                            <span>Reviews</span>
-                        </div>
-                    </div>
-
+                    <ProfileStats
+                        followers={followersCount}
+                        following={followingCount}
+                        reviews={totalReviews}
+                    />
                 </div>
             </div>
 
@@ -146,36 +81,22 @@ const ProfilePage: React.FC = () => {
             {!loading && !error && reviews.length === 0 && <p>No reviews found.</p>}
 
             <div className="review-grid">
-                {reviews.map((review) => (
-                    <div key={`${review.user_id}-${review.game_id}`} className="review-card">
-                        <img onClick={() => removeReview(review.game_id)} className="delete-icon" src="/deleteIcon.svg" alt="Delete Icon" width={24} height={24} />
-                        <img onClick={() => { handleGameClick(review.game_id) }} className="card-cover" src={review.games.cover_url} alt={review.games.game_title} />
-                        <div
-                            className="rating-badge"
-                            style={{ backgroundColor: getRatingColor(review.rating) }}
-                        >
-                            {review.rating}
-                        </div>
-                    </div>
+                {reviews.map(review => (
+                    <ReviewCard
+                        key={`${review.user_id}-${review.game_id}`}
+                        review={review}
+                        onDelete={removeReview}
+                        onClick={handleGameClick}
+                    />
                 ))}
             </div>
 
-
-            {/* Pagination Controls */}
-            <div className="pagination">
-                <button onClick={handlePrevPage} disabled={page === 0}>
-                    Previous
-                </button>
-                <span>
-                    Page {page + 1} of {Math.ceil(totalReviews / REVIEWS_PER_PAGE)}
-                </span>
-                <button
-                    onClick={handleNextPage}
-                    disabled={(page + 1) * REVIEWS_PER_PAGE >= totalReviews}
-                >
-                    Next
-                </button>
-            </div>
+            <Pagination
+                page={page}
+                totalReviews={totalReviews}
+                onPrev={handlePrevPage}
+                onNext={handleNextPage}
+            />
         </div>
     );
 };
