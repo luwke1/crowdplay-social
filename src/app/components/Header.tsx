@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "../utils/supabase";
+import { getCurrentUser, logout } from "@/api/auth";
 import "./Header.css";
 
 const Header = () => {
@@ -11,28 +11,16 @@ const Header = () => {
 
   // Fetch user authentication state
   useEffect(() => {
-    const fetchUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-    };
-
-    fetchUser();
-
-    // Listen for authentication state changes
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user || null);
-    });
-
-    return () => {
-      authListener.subscription.unsubscribe();
-    };
+    getCurrentUser()
+      .then((u) => setUser(u))
+      .catch(() => setUser(null));
   }, []);
 
   // Handle logout and redirect
   const handleLogout = async (event: React.MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault(); // Prevent default navigation behavior
     try {
-      await supabase.auth.signOut();
+      await logout();
       setUser(null);
       router.push("/login");
     } catch (error) {
@@ -41,7 +29,7 @@ const Header = () => {
   };
 
   const handleSearch = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Enter") { 
+    if (event.key === "Enter") {
       const searchQuery = (event.target as HTMLInputElement).value;
       router.push(`/search?q=${searchQuery}`);
     }
@@ -55,6 +43,7 @@ const Header = () => {
       </div>
       <a href="/">Games</a>
       <a href="/friends">Friends</a>
+      <a href="/recommendations">Recommendations</a>
       <a href="/profile">Profile</a>
 
       {user ? (

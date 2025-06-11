@@ -16,24 +16,37 @@ export const getUserReview = async (userId: string, gameId: number) => {
 };
 
 
-export const getUserReviews = async (userId: string, page: number, limit: number) => {
+export const getUserReviews = async (
+    userId: string,
+    page: number,
+    limit: number,
+    sortBy: string = "created_at",
+    sortOrder: boolean = false
+  ): Promise<{ data: any[]; count: number; error: Error | null }> => {
+    const from = page * limit;
+    const to = (page + 1) * limit - 1;
+  
     const { data, count, error } = await supabase
-        .from("reviews")
-        .select(
-            `game_id, rating, review_text, created_at, games(game_title, cover_url)`,
-            { count: "exact" }
-        )
-        .eq("user_id", userId)
-        .order("created_at", { ascending: false })
-        .range(page * limit, (page + 1) * limit - 1);
-
+      .from("reviews")
+      .select(
+        `game_id,
+         rating,
+         review_text,
+         created_at,
+         games(game_title, cover_url)`,
+        { count: "exact" }
+      )
+      .eq("user_id", userId)
+      .order(sortBy, { ascending: sortOrder })
+      .range(from, to);
+  
     if (error) {
-        console.error("Error fetching user reviews:", error.message);
-        return { data: [], count: 0, error };
+      console.error("Error fetching user reviews:", error.message);
+      return { data: [], count: 0, error };
     }
-
-    return { data, count, error: null };
-};
+  
+    return { data: data || [], count: count || 0, error: null };
+  };
 
 export const upsertUserReview = async (
     userId: string,
@@ -52,7 +65,7 @@ export const upsertUserReview = async (
             .single();
 
         if (!existingGame) {
-            // Insert game into `games` table if it doesn't exist
+            // Insert game into games table if it doesn't exist
             const { error: insertGameError } = await supabase.from("games").insert([
                 {
                     game_id: gameId,
@@ -63,7 +76,7 @@ export const upsertUserReview = async (
             if (insertGameError) throw insertGameError;
         }
 
-        // Upsert the review (no more game_title or cover_url in reviews table)
+        // Upsert the review
         const { data, error } = await supabase.from("reviews").upsert(
             [
                 {
@@ -112,33 +125,23 @@ export const getGameReviews = async (gameId: number) => {
     return data;
 }
 
-export const getReviewsUsername = async (username: any, page: number, limit: number) => {
-    try {
-        // Fetch user ID based on username
-        const { data: userData, error: userError } = await supabase
-            .from("profiles")
-            .select("id")
-            .eq("username", username)
-            .single();
-
-        if (userError || !userData) {
-            console.error("Error fetching user ID:", userError?.message || "User not found.");
-            return { data: [], count: 0, error: userError || new Error("User not found") };
-        }
-
-        const userId = userData.id;
-
-        // Fetch reviews for the user
-        const { data, count, error } = await getUserReviews(userId, page, limit);
-
-        if (error) {
-            console.error("Error fetching user reviews:", error.message);
-            return { data: [], count: 0, error };
-        }
-
-        return { data, count, error: null };
-    } catch (err) {
-        console.error("Unexpected error:", err);
-        return { data: [], count: 0, error: err };
+export const getReviewsUsername = async (
+    username: string,
+    page: number,
+    limit: number
+  ): Promise<{ data: any[]; error: Error | null }> => {
+    // find the user
+    const { data: userRow, error: userError } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("username", username)
+      .single();
+  
+    if (userError || !userRow) {
+      console.error("Error fetching user ID:", userError?.message || "User not found.");
+      return { data: [], error: userError || new Error("User not found") };
     }
-};
+  
+    // fetch their reviews page
+    return getUserReviews(userRow.id, page, limit);
+  };

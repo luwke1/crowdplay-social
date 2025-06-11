@@ -4,7 +4,15 @@
     row-gap: 20px;
     width: 60%;
     margin: 0 auto;
-    margin-bottom: 100px;
+    color: white;
+}
+
+.search-results h1 {
+    width: 100%;
+    font-size: 20px;
+    margin-bottom: 20px;
+    text-align: center;
+    color: white;
 }
 
 @media (max-width: 1200px) {
@@ -27,18 +35,17 @@
 }
 
 .result-card {
-    padding: 5px;
-    background-color: #3b3b3b;
+    padding: 5px 15px 5px 15px;
+    background-color: #27272a;
     display: flex;
     width: 100%;
     border-radius: 5px;
-    transition: outline 0.5s;
+    transition: box-shadow 0.2s;
 }
 
 .result-card:hover {
     cursor: pointer;
-    outline: 1px solid white;
-    outline-offset: -1px;
+    box-shadow: 0 0 5px rgb(255, 255, 255);
 }
 
 .result-info{
@@ -46,29 +53,8 @@
 }
 
 .result-card img{
-    height: 100px;
-    width: 80px;
+    width: 100px;
+    height: 128px;
     object-fit: cover;
-    border-radius: 10px;
-}
-
-.pagination{
-    display: flex;
-    justify-content: center;
-    height: 20px;
-    gap: 10px;
-    margin-top: 20px;
-}
-.pagination button{
-    border-radius: 2px;
-    height: 30px;
-    padding: 5px 20px;
-    background-color: rgb(255, 255, 255);
-    transition: background-color 0.3s;
-}
-
-.pagination button:hover{
-    background-color: rgb(0, 0, 0);
-    color: white;
-    cursor: pointer;
+    border-radius: 8px;
 }

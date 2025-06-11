@@ -34,7 +34,11 @@ export default function HomePage() {
       setLoadingPopular(true);
       try {
         const response = await axios.get(`/api/igdb?page=${popularPage}`);
-        setPopularGames(response.data);
+        if (popularPage === 1) {
+          setPopularGames(response.data); // replace on first page load
+        } else {
+          setPopularGames(prev => [...prev, ...response.data]); // append on next pages
+        }
       } catch (err: any) {
         console.error("Failed to fetch popular games:", err);
         setPopularError("Failed to load popular games.");
@@ -51,7 +55,11 @@ export default function HomePage() {
       setLoadingLatest(true);
       try {
         const response = await axios.get(`/api/igdb?type=latest&page=${latestPage}`);
-        setLatestGames(response.data);
+        if (latestPage === 1) {
+          setLatestGames(response.data);
+        } else {
+          setLatestGames(prev => [...prev, ...response.data]);
+        }
       } catch (err: any) {
         console.error("Failed to fetch latest games:", err);
         setLatestError("Failed to load latest games.");
@@ -71,44 +79,38 @@ export default function HomePage() {
       {/* Popular Games Section */}
       <div className="game-list-container">
         <h2>Popular Games</h2>
-        <hr/> 
+        <hr />
         {popularError && <p>{popularError}</p>}
         <div className="game-list">
-          {loadingPopular ? (
-            <p>Loading...</p>
-          ) : (
-            popularGames.map((game) => (
-              <GameCard key={game.id} game={game} onClick={handleGameClick} />
-            ))
-          )}
+          {popularGames.map((game) => (
+            <GameCard key={game.id} game={game} onClick={handleGameClick} />
+          ))}
+          {loadingPopular && <p>Loading more games...</p>}
         </div>
         <div className="pagination-buttons">
-          <button disabled={popularPage === 1} onClick={() => setPopularPage(popularPage - 1)}>
+          {/* <button disabled={popularPage === 1} onClick={() => setPopularPage(popularPage - 1)}>
             Previous
-          </button>
-          <button onClick={() => setPopularPage(popularPage + 1)}>Next</button>
+          </button> */}
+          <button onClick={() => setPopularPage(popularPage + 1)}>Load More</button>
         </div>
       </div>
 
       {/* Latest Games Section */}
       <div className="game-list-container">
         <h2>Latest Games</h2>
-        <hr/> 
+        <hr />
         {latestError && <p>{latestError}</p>}
         <div className="game-list">
-          {loadingLatest ? (
-            <p>Loading...</p>
-          ) : (
-            latestGames.map((game) => (
-              <GameCard key={game.id} game={game} onClick={handleGameClick} />
-            ))
-          )}
+          {latestGames.map((game) => (
+            <GameCard key={game.id} game={game} onClick={handleGameClick} />
+          ))}
+          {loadingLatest && <p>Loading more games...</p>}
         </div>
         <div className="pagination-buttons">
-          <button disabled={latestPage === 1} onClick={() => setLatestPage(latestPage - 1)}>
+          {/* <button disabled={latestPage === 1} onClick={() => setLatestPage(latestPage - 1)}>
             Previous
-          </button>
-          <button onClick={() => setLatestPage(latestPage + 1)}>Next</button>
+          </button> */}
+          <button onClick={() => setLatestPage(latestPage + 1)}>Load More</button>
         </div>
       </div>
     </div>

@@ -1,29 +1,126 @@
-import axios from 'axios';
-import { NextResponse } from 'next/server';
+import { GoogleGenAI } from "@google/genai";
+import { NextResponse } from "next/server";
+import { getUserReviews } from "@/api/reviews";
+import { buildSystemInstruction } from "@/utils/instructionBuilder";
+import { reviewsService } from "@/services/reviewsService";
 
-import OpenAI from 'openai';
+import axios from "axios";
 
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const CLIENT_ID = process.env.IGDB_CLIENT_ID;
+const CLIENT_SECRET = process.env.IGDB_CLIENT_SECRET;
+const TOKEN_URL = "https://id.twitch.tv/oauth2/token";
+const IGDB_URL = "https://api.igdb.com/v4";
 
-// Initialize OpenAI API
-const openai = new OpenAI({
-    apiKey: OPENAI_API_KEY,
+let accessToken = "";
+
+const ai = new GoogleGenAI({
+    apiKey: process.env.GEMINI_API_KEY || "",
 });
 
-async function generateRecommendations(prompt: string, retries = 0) {
-    try {
-        // Make API call to OpenAI
-        const completion = openai.chat.completions.create({
-            model: "gpt-4o",
-            store: true,
-            messages: [
-                { "role": "user", "content": prompt },
-                { "role": "system", "content": "You are a game recommendation assistant that only speaks JSON. List 10 games based on the user prompt and return JSON in the format of the game's title, release date, and non-spoiler description of why it fits. Do not write normal text." },
-            ],
-        });
-        completion.then((result) => console.log(result.choices[0].message));
+const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
-    } catch (error) {
-        console.error("Error generating games:", error);
+export async function POST(req: Request) {
+    const { prompt, useProfile, userId } = await req.json();
+
+    // 2. Optionally fetch & format reviews
+    let reviewsFormatted: string | undefined;
+    if (useProfile && userId) {
+        const reviews = await reviewsService.fetchForUser(userId);
+        reviewsFormatted = reviewsService.formatReviews(reviews);
     }
+
+    const systemInstruction = buildSystemInstruction({ useProfile, formattedReviews: reviewsFormatted});
+
+    try {
+        // Generate content using Gemini AI
+        const result = await ai.models.generateContent({
+            model: "gemini-2.0-flash",
+            contents: [
+                {
+                    role: "user",
+                    parts: [{ text: prompt }],
+                },
+            ],
+            config: {
+                systemInstruction: systemInstruction,
+                responseMimeType: "application/json"
+            },
+        });
+
+        // Check if the result is valid
+        const responseText = await result.text;
+        if (!responseText) {
+            return NextResponse.json(
+                { error: "No response from Gemini." },
+                { status: 500 }
+            );
+        }
+        // Parse the JSON response
+        const jsonResponse = JSON.parse(responseText);
+        let updatedGames = jsonResponse;
+
+        if (Array.isArray(jsonResponse) && jsonResponse.length !== 0) {
+            // Fetch IGDB data for each game title, this mostly just gets the cover image of a game
+            updatedGames = await Promise.all(
+                jsonResponse.map(async (game: any) => {
+                    try {
+                        const igdbData = await fetchIGDBData(game.title);
+
+                        // Attach IGDB data to the game object
+                        return {
+                            ...game,
+                            igdb: igdbData?.[0] || null,
+                        };
+                    } catch (error) {
+                        console.error(`Failed to fetch IGDB info for ${game.title}`, error);
+                        return {
+                            ...game,
+                            igdb: null,
+                        };
+                    }
+                })
+            );
+        }
+
+        return NextResponse.json(updatedGames);
+    } catch (error) {
+        console.error("Error from Gemini:", error);
+        return NextResponse.json(
+            { error: "Failed to generate recommendations." },
+            { status: 500 }
+        );
+    }
+}
+
+const getAccessToken = async () => {
+    if (accessToken) return accessToken;
+    const response = await axios.post(TOKEN_URL, null, {
+        params: {
+            client_id: CLIENT_ID,
+            client_secret: CLIENT_SECRET,
+            grant_type: "client_credentials",
+        },
+    });
+    accessToken = response.data.access_token;
+    return accessToken;
+};
+
+// Fetch IGDB data for a specific game title
+async function fetchIGDBData(gameTitle: string) {
+    const token = await getAccessToken();
+    // Perform search using the provided query
+    const query = `
+        search "${gameTitle}";
+        fields name, cover.url, rating, rating_count, summary, genres.name, release_dates.date;
+        where cover != null & category = (0, 4, 8, 9) & parent_game = null & rating_count > 10;
+    `;
+
+    const response = await axios.post(`${IGDB_URL}/games`, query, {
+        headers: {
+            "Client-ID": CLIENT_ID,
+            Authorization: `Bearer ${token}`,
+        },
+    });
+
+    return response.data;
 }
