@@ -1,125 +1,119 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import axios from "axios";
+import { createClient } from "@/utils/supabase/client";
 import RecommendCard from "@/components/RecommendCard";
-import { getCurrentUser } from "@/api/auth";
-import "./recommendations.css";
+
+// MUI for toggle switch
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 
+import "./recommendations.css";
+
+// structure of recommendation data
 type GameRecommendation = {
-  title: string;
-  year: string;
-  reason: string;
-  igdb: any; // Optional IGDB data
+    title: string;
+    year: string;
+    reason: string;
+    igdb: any; // holds IGDB game info (e.g., cover, id)
 };
 
 export default function RecommendationsPage() {
-  const [prompt, setPrompt] = useState("");
-  const [recommendations, setRecommendations] = useState<GameRecommendation[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [useProfile, setUseProfile] = useState(false);
-  const [user, setUser] = useState<any>(null);
+    const [prompt, setPrompt] = useState(""); // user input for prompt
+    const [recommendations, setRecommendations] = useState<GameRecommendation[]>([]); // result list
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
+    const [useProfile, setUseProfile] = useState(false); // toggle: include user's reviews
+    const [isLoggedIn, setIsLoggedIn] = useState(false); // used to disable profile mode if not authed
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      const currentUser = await getCurrentUser();
-      if (!currentUser) {
-        setLoading(false);
-        return;
-      }
-      setUser(currentUser);
+    useEffect(() => {
+        const supabase = createClient();
+
+        // set login state on auth change
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            setIsLoggedIn(!!session);
+        });
+
+        // restore last recs from localStorage if available
+        const stored = localStorage.getItem("crowdplay_recommendations");
+        if (stored) setRecommendations(JSON.parse(stored));
+
+        return () => subscription.unsubscribe(); // cleanup on unmount
+    }, []);
+
+    // main function to generate recs based on prompt (+ profile if enabled)
+    async function generateRecommendations() {
+        setLoading(true);
+        setError(null);
+        try {
+            const res = await axios.post("/api/recommendations", { prompt, useProfile });
+
+            // cache recs in localStorage for persistence
+            localStorage.setItem("crowdplay_recommendations", JSON.stringify(res.data));
+            setRecommendations(res.data);
+        } catch (err: any) {
+            setError(err.response?.data?.error || "An error occurred.");
+        } finally {
+            setLoading(false);
+        }
     }
 
-    fetchUser();
+    return (
+        <div className="recommendationsBody">
+            <h1>Generate Recommendations</h1>
 
-    const stored = localStorage.getItem("crowdplay_recommendations");
+            <div className="recSettings">
+                {/* loading bar */}
+                {loading && (
+                    <div className="loadingBarContainer">
+                        <div className="loadingBar"></div>
+                    </div>
+                )}
 
-    if (stored) {
-      setRecommendations(JSON.parse(stored));
-    } else {
-      setRecommendations([]);
-    }
-  }, []);
+                {/* error display */}
+                {error && <p style={{ color: 'red', marginBottom: '10px' }}>{error}</p>}
 
-  async function generateRecommendations() {
-    try {
-      setLoading(true);
-      const res = await fetch("/api/recommendations", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ prompt, useProfile, userId: user?.id || null }),
-      });
+                {/* user prompt input */}
+                <div className="searchArea">
+                    <input
+                        onChange={(e) => setPrompt(e.target.value)}
+                        placeholder="e.g., games with a great story"
+                        disabled={loading}
+                        value={prompt}
+                    />
+                </div>
 
-      if (!res.ok) {
-        console.error("Failed to fetch recommendations:", res.statusText);
-        return;
-      }
+                {/* toggle for profile-based recommendations */}
+                <FormControlLabel
+                    control={
+                        <Switch
+                            checked={useProfile}
+                            onChange={(e) => setUseProfile(e.target.checked)}
+                            disabled={!isLoggedIn || loading}
+                        />
+                    }
+                    label="Generate Based on Your Reviews"
+                />
 
-      const data = await res.json();
-      localStorage.setItem("crowdplay_recommendations", JSON.stringify(data));
-      setRecommendations(data);
-    } catch (error) {
-      console.error("Error fetching recommendations:", error);
-    } finally {
-      setLoading(false);
-    }
-  }
+                {/* generate button (disabled if prompt too short or profile mode w/o login) */}
+                <button
+                    className="generateBtn"
+                    onClick={generateRecommendations}
+                    disabled={loading || prompt.length < 5 || (useProfile && !isLoggedIn)}
+                >
+                    {loading ? "Generating..." : "Generate"}
+                </button>
+            </div>
 
-  return (
-    <div className="recommendationsBody">
-      <h1>Generate Recommendations</h1>
-      <div className="recSettings">
-        {/* Loading bar */}
-        {loading && (
-          <div className="loadingBarContainer">
-            <div className="loadingBar"></div>
-          </div>
-        )}
-
-
-
-        {/* Search input */}
-        <div className="searchArea">
-          <div>
-            <input
-              onChange={(e) => setPrompt(e.target.value)}
-              minLength={5}
-              maxLength={80}
-              placeholder="ex: list games that (feel like im in the future)"
-              disabled={loading}
-              value={prompt}
-            />
-          </div>
-
+            {/* list of recommended games */}
+            <div className="recSection">
+                {recommendations.map((game, index) => (
+                    <RecommendCard key={`${game.title}-${index}`} recommendation={game} />
+                ))}
+            </div>
         </div>
-        <FormControlLabel onChange={() => setUseProfile(prev => !prev)} control={<Switch />} label="Generate Based on Your Reviews" />
-
-        <div>
-          <button
-            className="generateBtn"
-            onClick={generateRecommendations}
-            disabled={
-              loading ||
-              prompt.length < 5 ||
-              (useProfile && !user) // disable if no logged in user
-            }
-          >
-            {loading ? "Generating..." : "Generate"}
-          </button>
-        </div>
-      </div>
-
-      <div className="recSection">
-        {recommendations.map((game) => (
-          <RecommendCard key={game.title} recommendation={game} />
-        ))}
-      </div>
-    </div>
-  );
+    );
 }

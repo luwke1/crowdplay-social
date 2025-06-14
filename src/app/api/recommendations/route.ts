@@ -1,6 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 import { NextResponse } from "next/server";
-import { getUserReviews } from "@/api/reviews";
+import { createClient } from "@/utils/supabase/server";
 import { buildSystemInstruction } from "@/utils/instructionBuilder";
 import { reviewsService } from "@/services/reviewsService";
 
@@ -20,16 +20,29 @@ const ai = new GoogleGenAI({
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
 export async function POST(req: Request) {
-    const { prompt, useProfile, userId } = await req.json();
+    const supabase = await createClient();
 
-    // 2. Optionally fetch & format reviews
+    // Securely get the user session on the server
+    const { data: { user } } = await supabase.auth.getUser();
+
+    const { prompt, useProfile } = await req.json();
+
     let reviewsFormatted: string | undefined;
-    if (useProfile && userId) {
-        const reviews = await reviewsService.fetchForUser(userId);
+
+    if (useProfile) {
+        if (!user) {
+            // If user wants to use profile but isn't logged in, return an error
+            return NextResponse.json(
+                { error: "You must be logged in for profile-based recommendations." },
+                { status: 401 }
+            );
+        }
+        // User is logged in, proceed to fetch their reviews
+        const reviews = await reviewsService.fetchForUser(user.id);
         reviewsFormatted = reviewsService.formatReviews(reviews);
     }
 
-    const systemInstruction = buildSystemInstruction({ useProfile, formattedReviews: reviewsFormatted});
+    const systemInstruction = buildSystemInstruction({ useProfile, formattedReviews: reviewsFormatted });
 
     try {
         // Generate content using Gemini AI
