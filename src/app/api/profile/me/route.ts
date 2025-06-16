@@ -9,8 +9,6 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    console.log("API request from user:", { id: user.id, email: user.email });
-
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "0", 10);
     const limit = 50;

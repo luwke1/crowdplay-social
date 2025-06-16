@@ -28,7 +28,6 @@ export default function ProfilePage() {
         setLoading(true);
         axios.get(`/api/profile/me?page=${page}`)
             .then(res => {
-                console.log(res.data); // optional: can remove later
                 setProfile(res.data);
             })
             .catch(err => {
@@ -42,7 +41,7 @@ export default function ProfilePage() {
             .finally(() => setLoading(false));
     }, [page, router]);
 
-    // delete review handler (optimistic UI)
+    // delete review handler
     const handleRemoveReview = async (gameId: number) => {
         const originalReviews = [...profile.reviews];
 

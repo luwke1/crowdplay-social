@@ -22,7 +22,6 @@ export default function SearchPage() {
             const response = await fetch(`/api/igdb?q=${query}`);
             const data = await response.json();
             setResults(data); // store search results
-            console.log(data);
         } catch (error) {
             console.error("Failed to fetch search results:", error);
         }
