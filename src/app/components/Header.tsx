@@ -2,57 +2,74 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getCurrentUser, logout } from "@/api/auth";
+import { createClient } from "@/utils/supabase/client";
 import "./Header.css";
 
+type User = {
+    id: string;
+    email?: string;
+};
+
 const Header = () => {
-  const [user, setUser] = useState<any>(null);
-  const router = useRouter();
+    const [user, setUser] = useState<User | null>(null);
+    const router = useRouter();
+    const supabase = createClient();
 
-  // Fetch user authentication state
-  useEffect(() => {
-    getCurrentUser()
-      .then((u) => setUser(u))
-      .catch(() => setUser(null));
-  }, []);
+    useEffect(() => {
+        const getUser = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            setUser(user);
+        };
 
-  // Handle logout and redirect
-  const handleLogout = async (event: React.MouseEvent<HTMLAnchorElement>) => {
-    event.preventDefault(); // Prevent default navigation behavior
-    try {
-      await logout();
-      setUser(null);
-      router.push("/login");
-    } catch (error) {
-      console.error("Logout failed:", error);
-    }
-  };
+        getUser();
 
-  const handleSearch = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Enter") {
-      const searchQuery = (event.target as HTMLInputElement).value;
-      router.push(`/search?q=${searchQuery}`);
-    }
-  }
+        // Set up a listener for auth changes
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+            setUser(session?.user ?? null);
+            router.refresh(); // Refresh router to reflect server-side changes
+        });
 
-  return (
-    <div className="header">
-      <div className="search-bar">
-        <img src="/search.svg" alt="" />
-        <input onKeyDown={handleSearch} type="text" />
-      </div>
-      <a href="/">Games</a>
-      <a href="/friends">Friends</a>
-      <a href="/recommendations">Recommendations</a>
-      <a href="/profile">Profile</a>
+        // Cleanup the listener on unmount
+        return () => {
+            subscription.unsubscribe();
+        };
+    }, [router, supabase]);
 
-      {user ? (
-        <a href="/login" onClick={handleLogout}>Logout</a>
-      ) : (
-        <a href="/signup">Sign Up</a>
-      )}
-    </div>
-  );
+    const handleLogout = async (event: React.MouseEvent<HTMLAnchorElement>) => {
+        event.preventDefault();
+        await supabase.auth.signOut();
+        // The listener will handle state update and router refresh
+        router.push('/login');
+    };
+
+    const handleSearch = (event: React.KeyboardEvent<HTMLInputElement>) => {
+        if (event.key === "Enter") {
+            const searchQuery = (event.target as HTMLInputElement).value;
+            router.push(`/search?q=${searchQuery}`);
+        }
+    };
+
+    return (
+        <div className="header">
+            <div className="search-bar">
+                <img src="/search.svg" alt="Search" />
+                <input onKeyDown={handleSearch} type="text" placeholder="Search..." />
+            </div>
+            <a href="/">Games</a>
+            <a href="/friends">Friends</a>
+            <a href="/recommendations">Recommendations</a>
+            {user && <a href="/profile">Profile</a>}
+
+            {user ? (
+                <a href="/login" onClick={handleLogout}>Logout</a>
+            ) : (
+                <>
+                  <a href="/login">Login</a>
+                  <a href="/signup">Sign Up</a>
+                </>
+            )}
+        </div>
+    );
 };
 
 export default Header;

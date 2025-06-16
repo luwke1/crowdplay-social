@@ -7,6 +7,9 @@ interface ReviewCardProps {
 }
 
 function ReviewCard({ review, onDelete, onClick }: ReviewCardProps) {
+    const coverUrl = review.games?.cover_url || '/default-cover.jpg'; // Use a default image
+    const gameTitle = review.games?.game_title || 'Unknown Game';
+
     return (
         <div className="review-card" key={`${review.user_id}-${review.game_id}`}>
             {onDelete && (
@@ -15,8 +18,8 @@ function ReviewCard({ review, onDelete, onClick }: ReviewCardProps) {
             <img
                 onClick={() => onClick(review.game_id)}
                 className="card-cover"
-                src={review.games.cover_url}
-                alt={review.games.game_title}
+                src={coverUrl}
+                alt={gameTitle}
             />
             <div
                 className="rating-badge"

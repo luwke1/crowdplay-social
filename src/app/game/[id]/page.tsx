@@ -2,219 +2,211 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { getCurrentUser } from "@/api/auth";
-import { getUserReview, upsertUserReview, getGameReviews } from "@/api/reviews";
-import axios from "axios";
 import "./game.css";
 
-interface Game {
-	id: number;
-	name: string;
-	cover?: { image_id: string };
-	rating?: number;
-	summary?: string;
+// shape of game info returned from backend
+interface GameDetails {
+    id: number;
+    name: string;
+    cover?: { image_id: string };
+    summary?: string;
+}
+
+// shape of a review object
+interface Review {
+    user_id: string;
+    game_id: number;
+    rating: number;
+    review_text: string;
+    username?: string;
 }
 
 export default function GamePage() {
-	const router = useRouter();
-	const { id } = useParams();
-	const [game, setGame] = useState<Game | null>(null);
-	const [error, setError] = useState<string | null>(null);
-	const [user, setUser] = useState<any>(null);
-	const [reviews, setReviews] = useState<any[]>([]);
-	const [reviewText, setReviewText] = useState<string>("");
+    const router = useRouter();
+    const { id } = useParams();
 
-	const [gameReviews, setGameReviews] = useState<any[]>([]);
+    // holds main data: game info, reviews from others, and your review
+    const [data, setData] = useState<{
+        details: GameDetails | null;
+        publicReviews: Review[];
+        userReview: Review | null;
+    }>({ details: null, publicReviews: [], userReview: null });
 
-	const getHighResImage = (imageId: string, size: string = "1080p") => {
-		return `https://images.igdb.com/igdb/image/upload/t_${size}/${imageId}.jpg`;
-	};
+    const [reviewText, setReviewText] = useState("");
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-	useEffect(() => {
-		async function fetchGameDetails() {
-			try {
-				const response = await axios.get(`/api/igdb?id=${id}`);
-				setGame(response.data);
-			} catch (err) {
-				console.error("Failed to fetch game:", err);
-			}
-		}
-		async function fetchUser() {
-			try {
-				const loggedInUser = await getCurrentUser();
-				if (loggedInUser) {
-					setUser(loggedInUser);
-				} else {
-					console.error("No logged-in user found.");
-				}
-			} catch (err) {
-				console.error("Error fetching user:", err);
-			}
-		}
-		async function fetchGameReviews() {
-			try {
-				const gameId = Number(id);
-				if (isNaN(gameId)) {
-					console.error("Invalid game ID:", id);
-					return;
-				}
-				const reviews = await getGameReviews(gameId);
-				setGameReviews(reviews);
-			} catch (err) {
-				console.error("Error fetching reviews:", err);
-			}
-		}
+    // fetch game info + reviews from API
+    useEffect(() => {
+        if (!id) return; // Ensure id is available before fetching
 
-		fetchGameDetails();
-		fetchUser();
-		fetchGameReviews();
-	}, [id]);
+        setLoading(true);
+        setError(null); // Clear previous errors
 
-	useEffect(() => {
-		async function fetchUserReview() {
-			try {
-				if (!user || !game) return;
+        fetch(`/api/game/${id}`)
+            .then(res => {
+                if (!res.ok) {
+                    return res.json().then(errorData => {
+                        throw new Error(errorData.error || `HTTP error! status: ${res.status}`);
+                    });
+                }
+                return res.json();
+            })
+            .then(data => {
+                setData(data);
+                setReviewText(data.userReview?.review_text || "");
+            })
+            .catch(err => {
+                console.error("Failed to load game:", err);
+                setError(err.message || "Failed to load game.");
+            })
+            .finally(() => {
+                setLoading(false);
+            });
+    }, [id]);
 
-				const data = await getUserReview(user.id, game.id);
+    // create or update the user's review for this game
+    const handleUpsertReview = async (rating: number, text: string) => { 
+        if (!data.details) return;
 
-				// Only update if no existing review is in state (prevents flickering)
-				if (reviews.length === 0) {
-					setReviews(data ? data : []);
-				}
-			} catch (err) {
-				console.error("Error fetching user review:", err);
-			}
-		}
+        try {
+            const res = await fetch('/api/reviews', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    gameId: data.details.id,
+                    gameTitle: data.details.name,
+                    coverUrl: data.details.cover
+                        ? `https://images.igdb.com/igdb/image/upload/t_cover_big/${data.details.cover.image_id}.jpg`
+                        : "",
+                    rating,
+                    reviewText: text
+                })
+            });
 
-		if (game && user) {
-			fetchUserReview();
-		}
+            if (!res.ok) {
+                const errorData = await res.json();
+                if (res.status === 401) {
+                    router.push('/login');
+                    return;
+                }
+                throw new Error(errorData.error || `HTTP error! status: ${res.status}`);
+            }
 
-	}, [game, user]);
+            const resData = await res.json();
+            setData(prev => ({ ...prev, userReview: resData }));
+        } catch (err: any) {
+            console.error("Failed to save review:", err);
+            setError(err.message || "Failed to save review.");
+        }
+    };
 
-	// Get rating color or default to gray if no review exists
-	const getRatingColor = () => {
-		if (reviews.length === 0) return "#ccc";
-		const rating = reviews[0].rating;
-		if (rating >= 7) return "#3ca62b";
-		if (rating >= 4) return "#ffbf00";
-		return "#e74c3c";
-	};
+    // return color based on rating value
+    const getRatingColor = (rating: number | null) =>
+        rating
+            ? rating >= 7
+                ? "#3ca62b"
+                : rating >= 4
+                    ? "#ffbf00"
+                    : "#e74c3c"
+            : "#444";
 
-	const setNewRating = async (rating: number, reviewText: string = "") => {
-		if (!user || !game) {
-			console.error("Missing user or game data.");
-			return;
-		}
+    // turn a cover image ID into full-size URL
+    const getHighResImage = (imageId: string) =>
+        `https://images.igdb.com/igdb/image/upload/t_1080p/${imageId}.jpg`;
 
-		try {
-			const coverUrl = game.cover
-				? `https://images.igdb.com/igdb/image/upload/t_cover_big/${game.cover.image_id}.jpg`
-				: "";
+    // show loading state
+    if (loading) return <div className="main-body"><p>Loading...</p></div>;
 
-			// If a review exists, update it. Otherwise, insert a new one.
-			if (reviews.length > 0) {
-				if (reviews[0].review_text != "" && reviewText == "") {
-					reviewText = reviews[0].review_text;
-				}
-			}
-			const existingReview = reviews.length > 0
-				? { ...reviews[0], rating, review_text: reviewText }
-				: { user_id: user.id, game_id: game.id, game_title: game.name, cover_url: coverUrl, rating, review_text: reviewText };
+    // handle not found or error states
+    if (error || !data.details)
+        return <div className="main-body"><p>{error || "Game not found."}</p></div>;
 
-			// Update UI immediately
-			setReviews([existingReview]);
+    return (
+        <div className="game-page">
+            <div className="game-container">
+                {/* left side: cover image */}
+                <div className="game-cover">
+                    {data.details.cover && (
+                        <img
+                            src={getHighResImage(data.details.cover.image_id)}
+                            alt={data.details.name}
+                        />
+                    )}
+                </div>
 
-			// Upsert review (update or insert)
-			await upsertUserReview(user.id, game.id, game.name, coverUrl, rating, existingReview.review_text);
-			console.log("Review successfully updated");
+                {/* right side: title + summary + rating UI */}
+                <div className="game-info">
+                    <h2 className="game-title">{data.details.name}</h2>
+                    <p className="game-summary">{data.details.summary}</p>
+                </div>
 
-		} catch (err) {
-			console.error("Error updating review:", err);
-			setError("Failed to update review. Try again.");
-		}
-	};
+                <div className="game-actions">
+                    <h3 className="rating-title">My Score</h3>
+                    <div className="rating-container">
+                        <div
+                            className="rating-circle"
+                            style={{
+                                backgroundColor: getRatingColor(
+                                    data.userReview?.rating ?? null
+                                )
+                            }}
+                        >
+                            {data.userReview?.rating ?? "-"}
+                        </div>
 
-	// Function to update review text state
-	const handleReviewChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-		setReviewText(event.target.value);
-	};
+                        {/* interactive rating bar (click to rate) */}
+                        <div className="rating-bar">
+                            {[...Array(10)].map((_, i) => (
+                                <div
+                                    key={i}
+                                    className={`rating-box ${data.userReview && i < data.userReview.rating ? "filled" : ""}`}
+                                    onClick={() => handleUpsertReview(i + 1, reviewText)}
+                                />
+                            ))}
+                        </div>
+                    </div>
 
-	const viewUser = (username:string) => {
-		router.push(`/${username}/reviews`);
-	};
+                    {/* review text area only shown if you've rated */}
+                    {data.userReview !== null && (
+                        <div className="game-review-form">
+                            <h3>Leave a Review</h3>
+                            <textarea
+                                value={reviewText}
+                                onChange={(e) => setReviewText(e.target.value)}
+                                placeholder="Write your review..."
+                            />
+                            <button
+                                onClick={() => handleUpsertReview(data.userReview!.rating, reviewText)}
+                                disabled={data.userReview?.review_text === reviewText}
+                            >
+                                Submit Review
+                            </button>
+                        </div>
+                    )}
+                </div>
+            </div>
 
-
-	return (
-		<div className="game-page">
-			{game ? (
-				<>
-					<div className="game-container">
-						{/* Left Column: Game Cover */}
-						<div className="game-cover">
-							{game.cover && <img src={getHighResImage(game.cover.image_id)} alt={game.name} />}
-						</div>
-
-						{/* Middle Column: Title & Description */}
-						<div className="game-info">
-							<h2 className="game-title">{game.name}</h2>
-							<p className="game-summary">{game.summary}</p>
-						</div>
-
-						{/* Right Column: Rating & Review Section */}
-						<div className="game-actions">
-							<h3 className="rating-title">My Score</h3>
-
-							{/* Metacritic-Style Rating System */}
-							<div className="rating-container">
-								{/* Score Circle */}
-								<div className="rating-circle" style={{ backgroundColor: getRatingColor() }}>
-									{reviews.length > 0 ? reviews[0].rating : "-"}
-								</div>
-
-								{/* Rating Bar */}
-								<div className="rating-bar">
-									{[...Array(10)].map((_, index) => (
-										<div
-											key={index}
-											className={`rating-box ${reviews.length > 0 && index < reviews[0].rating ? "filled" : ""}`}
-											onClick={() => setNewRating(index + 1)}
-										/>
-									))}
-								</div>
-							</div>
-
-							{/* Review Form */}
-							<div className="game-review-form">
-								<h3>Leave a Review</h3>
-								<textarea onChange={handleReviewChange} placeholder="Write your review (optional)..." />
-								<button onClick={() => setNewRating(reviews[0].rating, reviewText)} disabled={!user || reviews.length <= 0 || reviewText.trim().length < 2}>Submit Review</button>
-								{error && <p className="error">{error}</p>}
-							</div>
-						</div>
-
-
-					</div>
-					<div className="game-reviews-container">
-						<h3 className="game-reviews-title">User Reviews</h3>
-						{gameReviews.length > 0 ? (
-							gameReviews.map((review) => (
-								<div key={`${review.user_id}-${review.game_id}`} className="game-review-card">
-									<div className="game-review-header">
-										<h4 onClick={() => {viewUser(review.username)}} className="game-review-username">{review.username}</h4>
-										<span className="game-review-rating">{review.rating}/10</span>
-									</div>
-									<p className="game-review-text">{review.review_text}</p>
-								</div>
-							))
-						) : (
-							<p className="no-reviews">No written reviews yet. Be the first to leave one!</p>
-						)}
-					</div>
-				</>
-			) : (
-				<p>Loading game details...</p>
-			)}
-		</div>
-	);
+            {/* public reviews below */}
+            <div className="game-reviews-container">
+                <h3>User Reviews</h3>
+                {data.publicReviews.map((review) => (
+                    <div key={review.user_id} className="game-review-card">
+                        <div className="game-review-header">
+                            <h4
+                                className="game-review-username"
+                                onClick={() => router.push(`/${review.username}/reviews`)}
+                            >
+                                {review.username}
+                            </h4>
+                            <span className="game-review-rating">{review.rating}/10</span>
+                        </div>
+                        <p className="game-review-text">{review.review_text}</p>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
 }

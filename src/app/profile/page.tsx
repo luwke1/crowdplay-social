@@ -1,104 +1,118 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { removeUserReview } from "@/api/reviews";
-import { useProfileData } from "@/hooks/useProfileData";
+import axios from "axios";
+
+// UI components
 import ProfileStats from "@/components/ProfileStats";
 import ReviewCard from "@/components/ReviewCard";
 import Pagination from "@/components/Pagination";
 import "./profile.css";
 
-const REVIEWS_PER_PAGE = 50;
-
-const ProfilePage: React.FC = () => {
+export default function ProfilePage() {
     const router = useRouter();
-    const [page, setPage] = React.useState<number>(0);
 
-    const {
-        user,
-        reviews,
-        loading,
-        error,
-        totalReviews,
-        followersCount,
-        followingCount,
-        setReviews,
-        setTotalReviews
-    } = useProfileData(page);
+    // main profile state object
+    const [profile, setProfile] = useState<any>(null);
 
-    const handleNextPage = () => {
-        if ((page + 1) * REVIEWS_PER_PAGE < totalReviews) {
-            setPage(prev => prev + 1);
-        }
-    };
+    // loading and error state
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-    const handlePrevPage = () => {
-        if (page > 0) {
-            setPage(prev => prev - 1);
-        }
-    };
+    // pagination tracking
+    const [page, setPage] = useState(0);
 
-    const removeReview = async (gameId: number) => {
-        if (!user) return;
+    // fetch logged-in user's profile
+    useEffect(() => {
+        setLoading(true);
+        axios.get(`/api/profile/me?page=${page}`)
+            .then(res => {
+                console.log(res.data); // optional: can remove later
+                setProfile(res.data);
+            })
+            .catch(err => {
+                if (err.response?.status === 401) {
+                    // redirect to login if not authenticated
+                    router.push('/login');
+                } else {
+                    setError(err.response?.data?.error || "Could not load your profile.");
+                }
+            })
+            .finally(() => setLoading(false));
+    }, [page, router]);
+
+    // delete review handler (optimistic UI)
+    const handleRemoveReview = async (gameId: number) => {
+        const originalReviews = [...profile.reviews];
+
+        // update state optimistically
+        setProfile((p: any) => ({
+            ...p,
+            reviews: p.reviews.filter((r: any) => r.game_id !== gameId),
+            totalReviews: p.totalReviews - 1,
+        }));
 
         try {
-            const { error } = await removeUserReview(user, gameId);
-            if (error) throw error;
-
-            setReviews(prev => prev.filter(review => review.game_id !== gameId));
-            setTotalReviews(prev => Math.max(prev - 1, 0));
+            await axios.delete('/api/reviews', { data: { gameId } });
         } catch (err) {
-            console.error("Failed to delete review:", err);
+            // if request fails, revert UI state
+            alert("Failed to delete review.");
+            setProfile((p: any) => ({
+                ...p,
+                reviews: originalReviews,
+                totalReviews: p.totalReviews + 1
+            }));
         }
     };
 
-    const handleGameClick = (gameId: number) => {
-        router.push(`/game/${gameId}`);
-    };
+    // handle loading and error fallback views
+    if (loading) return <div className="profile-container"><p>Loading profile...</p></div>;
+    if (error) return <div className="profile-container"><p className="error" style={{ color: '#ff5555' }}>{error}</p></div>;
+    if (!profile) return null;
 
     return (
         <div className="profile-container">
+            {/* profile header section */}
             <div className="profile-details">
                 <img className="profile-image" src="/default-profile.jpg" alt="Profile" />
                 <div>
                     <div className="profile-title">
                         <h1>My Reviews</h1>
+                        {/* placeholder for future settings/actions */}
                         <button className="profile-option-btn">...</button>
                     </div>
-                    <ProfileStats
-                        followers={followersCount}
-                        following={followingCount}
-                        reviews={totalReviews}
+                    <ProfileStats 
+                        followers={profile.followersCount}
+                        following={profile.followingCount}
+                        reviews={profile.totalReviews}
                     />
                 </div>
             </div>
 
             <hr />
 
-            {loading && <p>Loading reviews...</p>}
-            {error && <p className="error">{error}</p>}
-            {!loading && !error && reviews.length === 0 && <p>No reviews found.</p>}
-
+            {/* display all user reviews */}
             <div className="review-grid">
-                {reviews.map(review => (
-                    <ReviewCard
-                        key={`${review.user_id}-${review.game_id}`}
+                {profile.reviews.map((review: any) => (
+                    <ReviewCard 
+                        key={review.game_id}
                         review={review}
-                        onDelete={removeReview}
-                        onClick={handleGameClick}
+                        onDelete={handleRemoveReview}
+                        onClick={(id) => router.push(`/game/${id}`)}
                     />
                 ))}
             </div>
 
-            <Pagination
-                page={page}
-                totalReviews={totalReviews}
-                onPrev={handlePrevPage}
-                onNext={handleNextPage}
-            />
+            {/* only show pagination if user has more than one page of reviews */}
+            {profile.totalReviews > 50 && (
+                <Pagination 
+                    page={page}
+                    totalReviews={profile.totalReviews}
+                    onPrev={() => setPage(p => p - 1)}
+                    onNext={() => setPage(p => p + 1)}
+                />
+            )}
         </div>
     );
-};
-
-export default ProfilePage;
+}
