@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import axios from "axios";
 import "./game.css";
 
 // shape of game info returned from backend
@@ -39,34 +38,68 @@ export default function GamePage() {
 
     // fetch game info + reviews from API
     useEffect(() => {
-        if (!id) return;
+        if (!id) return; // Ensure id is available before fetching
+
         setLoading(true);
-        axios.get(`/api/game/${id}`)
+        setError(null); // Clear previous errors
+
+        fetch(`/api/game/${id}`)
             .then(res => {
-                setData(res.data);
-                setReviewText(res.data.userReview?.review_text || "");
+                if (!res.ok) {
+                    return res.json().then(errorData => {
+                        throw new Error(errorData.error || `HTTP error! status: ${res.status}`);
+                    });
+                }
+                return res.json();
             })
-            .catch(() => setError("Failed to load game."))
-            .finally(() => setLoading(false));
+            .then(data => {
+                setData(data);
+                setReviewText(data.userReview?.review_text || "");
+            })
+            .catch(err => {
+                console.error("Failed to load game:", err);
+                setError(err.message || "Failed to load game.");
+            })
+            .finally(() => {
+                setLoading(false);
+            });
     }, [id]);
 
     // create or update the user's review for this game
-    const handleUpsertReview = async (rating: number, text: string) => {
+    const handleUpsertReview = async (rating: number, text: string) => { 
         if (!data.details) return;
+
         try {
-            const res = await axios.post('/api/reviews', {
-                gameId: data.details.id,
-                gameTitle: data.details.name,
-                coverUrl: data.details.cover
-                    ? `https://images.igdb.com/igdb/image/upload/t_cover_big/${data.details.cover.image_id}.jpg`
-                    : "",
-                rating,
-                reviewText: text
+            const res = await fetch('/api/reviews', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    gameId: data.details.id,
+                    gameTitle: data.details.name,
+                    coverUrl: data.details.cover
+                        ? `https://images.igdb.com/igdb/image/upload/t_cover_big/${data.details.cover.image_id}.jpg`
+                        : "",
+                    rating,
+                    reviewText: text
+                })
             });
-            if (res.status === 401) return router.push('/login');
-            setData(prev => ({ ...prev, userReview: res.data }));
-        } catch (err) {
-            setError("Failed to save review.");
+
+            if (!res.ok) {
+                const errorData = await res.json();
+                if (res.status === 401) {
+                    router.push('/login');
+                    return;
+                }
+                throw new Error(errorData.error || `HTTP error! status: ${res.status}`);
+            }
+
+            const resData = await res.json();
+            setData(prev => ({ ...prev, userReview: resData }));
+        } catch (err: any) {
+            console.error("Failed to save review:", err);
+            setError(err.message || "Failed to save review.");
         }
     };
 
@@ -76,8 +109,8 @@ export default function GamePage() {
             ? rating >= 7
                 ? "#3ca62b"
                 : rating >= 4
-                ? "#ffbf00"
-                : "#e74c3c"
+                    ? "#ffbf00"
+                    : "#e74c3c"
             : "#444";
 
     // turn a cover image ID into full-size URL

@@ -23,10 +23,12 @@ export async function POST(request: Request) {
 
         if (gameError) throw gameError;
         
-        // Step 2: Now that the game is guaranteed to exist, upsert the review.
+        // Step 2: Game is guaranteed to exist, upsert the review.
         const { data, error: reviewError } = await supabase
             .from("reviews")
-            .upsert({ user_id: user.id, game_id: gameId, rating, review_text: reviewText })
+            .upsert(
+                { user_id: user.id, game_id: gameId, rating, review_text: reviewText },
+                { onConflict: 'user_id , game_id' })
             .select()
             .single();
 

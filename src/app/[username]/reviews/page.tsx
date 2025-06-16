@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import axios from "axios";
 
 // UI components
 import Pagination from "@/components/Pagination";
@@ -27,11 +26,28 @@ export default function ReviewsPage() {
     // fetch profile + reviews whenever username or page changes
     useEffect(() => {
         if (!username) return;
-        setLoading(true);
-        axios.get(`/api/profile/${username}?page=${page}`)
-            .then(res => setProfile(res.data))
-            .catch(err => setError(err.response?.data?.error || "Failed to load profile."))
-            .finally(() => setLoading(false));
+
+        const fetchProfile = async () => {
+            setLoading(true);
+            setError(null); // Clear previous errors
+
+            try {
+                const res = await fetch(`/api/profile/${username}?page=${page}`);
+                if (!res.ok) {
+                    const errorData = await res.json();
+                    throw new Error(errorData.error || `HTTP error! status: ${res.status}`);
+                }
+                const data = await res.json();
+                setProfile(data);
+            } catch (err: any) {
+                console.error("Failed to fetch profile:", err);
+                setError(err.message || "Failed to load profile.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchProfile();
     }, [username, page]);
 
     // follow/unfollow toggle logic
