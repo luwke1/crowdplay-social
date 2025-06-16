@@ -39,11 +39,17 @@ export default function ReviewsPage() {
         try {
             if (profile.isFollowing) {
                 // unfollow API call
-                await axios.delete(`/api/follow?username=${username}`);
+                await fetch(`/api/follow?username=${username}`,{method:'DELETE'});
                 setProfile((p: any) => ({ ...p, isFollowing: false, followersCount: p.followersCount - 1 }));
             } else {
                 // follow API call
-                await axios.post('/api/follow', { usernameToFollow: username });
+                await fetch('/api/follow', { 
+                    method: 'POST',
+                    headers:{
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ usernameToFollow: username })
+                });
                 setProfile((p: any) => ({ ...p, isFollowing: true, followersCount: p.followersCount + 1 }));
             }
         } catch (err: any) {
