@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import { createClient } from "@/utils/supabase/client";
 import RecommendCard from "@/components/RecommendCard";
 
@@ -21,16 +20,23 @@ type GameRecommendation = {
 };
 
 export default function RecommendationsPage() {
-    const [prompt, setPrompt] = useState(""); // user input for prompt
-    const [recommendations, setRecommendations] = useState<GameRecommendation[]>([]); // result list
+    const [prompt, setPrompt] = useState("");
+    const [recommendations, setRecommendations] = useState<GameRecommendation[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const [useProfile, setUseProfile] = useState(false); // toggle: include user's reviews
-    const [isLoggedIn, setIsLoggedIn] = useState(false); // used to disable profile mode if not authed
+    const [useProfile, setUseProfile] = useState(false);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
 
     useEffect(() => {
         const supabase = createClient();
+
+        // Check for session on initial load
+        const checkInitialSession = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            setIsLoggedIn(!!session);
+        };
+        checkInitialSession();
 
         // set login state on auth change
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -49,13 +55,26 @@ export default function RecommendationsPage() {
         setLoading(true);
         setError(null);
         try {
-            const res = await axios.post("/api/recommendations", { prompt, useProfile });
+            const res = await fetch("/api/recommendations", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ prompt, useProfile }),
+            });
+
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(errorData.error || "An error occurred while generating recommendations.");
+            }
+
+            const data = await res.json();
 
             // cache recs in localStorage for persistence
-            localStorage.setItem("crowdplay_recommendations", JSON.stringify(res.data));
-            setRecommendations(res.data);
+            localStorage.setItem("crowdplay_recommendations", JSON.stringify(data));
+            setRecommendations(data);
         } catch (err: any) {
-            setError(err.response?.data?.error || "An error occurred.");
+            setError(err.message);
         } finally {
             setLoading(false);
         }
@@ -98,7 +117,7 @@ export default function RecommendationsPage() {
                     label="Generate Based on Your Reviews"
                 />
 
-                {/* generate button (disabled if prompt too short or profile mode w/o login) */}
+                {/* generate button */}
                 <button
                     className="generateBtn"
                     onClick={generateRecommendations}
