@@ -56,7 +56,6 @@ const Header = () => {
                 <input onKeyDown={handleSearch} type="text" placeholder="Search..." />
             </div>
             <a href="/">Games</a>
-            <a href="/friends">Friends</a>
             <a href="/recommendations">Recommendations</a>
             {user && <a href="/profile">Profile</a>}
 
@@ -65,7 +64,6 @@ const Header = () => {
             ) : (
                 <>
                   <a href="/login">Login</a>
-                  <a href="/signup">Sign Up</a>
                 </>
             )}
         </div>

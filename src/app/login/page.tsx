@@ -1,7 +1,11 @@
 import { login } from "./actions";
 import "./login.css";
 
-export default function LoginPage() {
+export default async function LoginPage({
+	searchParams,
+} : {
+	searchParams: {message: string}
+}) {
 	return (
 		<div className="login-container">
 			<h2>Login</h2>
@@ -20,6 +24,12 @@ export default function LoginPage() {
 					required
 				/>
 				<button type="submit">Login</button>
+				{/* Display error message if it exists */}
+                {searchParams.message && (
+                    <p className="error-message">
+                        {searchParams.message}
+                    </p>
+                )}
 			</form>
 
 			<p className="switch-auth">
