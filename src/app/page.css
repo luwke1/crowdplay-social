@@ -44,6 +44,12 @@
     gap: 10px;
 }
 
+.loadingGames{
+    margin-top: 20px;
+    color: white;
+    width: 200px;
+}
+
 
 @media (max-width: 600px) {
     .main-body {

@@ -85,8 +85,8 @@ export default function HomePage() {
           {popularGames.map((game) => (
             <GameCard key={game.id} game={game} onClick={handleGameClick} />
           ))}
-          {loadingPopular && <p>Loading more games...</p>}
         </div>
+        {loadingPopular && <p className="loadingGames">Loading more games...</p>}
         <div className="pagination-buttons">
           {/* <button disabled={popularPage === 1} onClick={() => setPopularPage(popularPage - 1)}>
             Previous
@@ -104,12 +104,10 @@ export default function HomePage() {
           {latestGames.map((game) => (
             <GameCard key={game.id} game={game} onClick={handleGameClick} />
           ))}
-          {loadingLatest && <p>Loading more games...</p>}
+          
         </div>
+        {loadingLatest && <p className="loadingGames">Loading more games...</p>}
         <div className="pagination-buttons">
-          {/* <button disabled={latestPage === 1} onClick={() => setLatestPage(latestPage - 1)}>
-            Previous
-          </button> */}
           <button onClick={() => setLatestPage(latestPage + 1)}>Load More</button>
         </div>
       </div>

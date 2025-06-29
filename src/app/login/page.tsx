@@ -1,11 +1,13 @@
 import { login } from "./actions";
 import "./login.css";
 
-export default async function LoginPage({
+
+export default function LoginPage({
 	searchParams,
 } : {
 	searchParams: {message: string}
 }) {
+
 	return (
 		<div className="login-container">
 			<h2>Login</h2>

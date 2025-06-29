@@ -118,7 +118,7 @@ export default function GamePage() {
         `https://images.igdb.com/igdb/image/upload/t_1080p/${imageId}.jpg`;
 
     // show loading state
-    if (loading) return <div className="main-body"><p>Loading...</p></div>;
+    if (loading) return <div className="game-page"><p>Loading...</p></div>;
 
     // handle not found or error states
     if (error || !data.details)

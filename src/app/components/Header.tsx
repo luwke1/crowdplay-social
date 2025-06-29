@@ -4,41 +4,31 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import "./Header.css";
+import type { User } from '@supabase/supabase-js';
 
-type User = {
-    id: string;
-    email?: string;
-};
-
-const Header = () => {
-    const [user, setUser] = useState<User | null>(null);
+// The component now accepts the server-rendered user as a prop
+export default function Header({ user: serverUser }: { user: User | null }) {
+    const [user, setUser] = useState<User | null>(serverUser);
     const router = useRouter();
-    const supabase = createClient();
 
     useEffect(() => {
-        const getUser = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            setUser(user);
-        };
-
-        getUser();
-
-        // Set up a listener for auth changes
+        const supabase = createClient();
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
             setUser(session?.user ?? null);
-            router.refresh(); // Refresh router to reflect server-side changes
+            router.refresh();
         });
 
-        // Cleanup the listener on unmount
         return () => {
             subscription.unsubscribe();
         };
-    }, [router, supabase]);
+    }, [router]);
+
 
     const handleLogout = async (event: React.MouseEvent<HTMLAnchorElement>) => {
         event.preventDefault();
+        const supabase = createClient();
         await supabase.auth.signOut();
-        // The listener will handle state update and router refresh
+        // The onAuthStateChange listener above will handle the UI update and refresh.
         router.push('/login');
     };
 
@@ -57,17 +47,14 @@ const Header = () => {
             </div>
             <a href="/">Games</a>
             <a href="/recommendations">Recommendations</a>
-            {user && <a href="/profile">Profile</a>}
-
             {user ? (
-                <a href="/login" onClick={handleLogout}>Logout</a>
-            ) : (
                 <>
-                  <a href="/login">Login</a>
+                    <a href="/profile">Profile</a>
+                    <a href="/login" onClick={handleLogout}>Logout</a>
                 </>
+            ) : (
+                <a href="/login">Login</a>
             )}
         </div>
     );
 };
-
-export default Header;
