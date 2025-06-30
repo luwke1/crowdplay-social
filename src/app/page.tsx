@@ -39,9 +39,11 @@ export default function HomePage() {
         } else {
           setPopularGames(prev => [...prev, ...response.data]); // append on next pages
         }
-      } catch (err: any) {
-        console.error("Failed to fetch popular games:", err);
-        setPopularError("Failed to load popular games.");
+      } catch (err) {
+        if (err instanceof Error) {
+          console.error("Failed to fetch games:", err);
+          setPopularError("Failed to load games.");
+        }
       } finally {
         setLoadingPopular(false);
       }
@@ -60,7 +62,7 @@ export default function HomePage() {
         } else {
           setLatestGames(prev => [...prev, ...response.data]);
         }
-      } catch (err: any) {
+      } catch (err) {
         console.error("Failed to fetch latest games:", err);
         setLatestError("Failed to load latest games.");
       } finally {
@@ -104,7 +106,7 @@ export default function HomePage() {
           {latestGames.map((game) => (
             <GameCard key={game.id} game={game} onClick={handleGameClick} />
           ))}
-          
+
         </div>
         {loadingLatest && <p className="loadingGames">Loading more games...</p>}
         <div className="pagination-buttons">

@@ -3,7 +3,7 @@ export function buildSystemInstruction(opts: {
     formattedReviews?: string;
 }): string {
     let instr = `You are a game recommendation assistant.
-Only reply in JSON format. Return exactly 10 games, each with a title, year of release, and a non-spoiler reason why it fits the user's prompt. If no prompt, generate 10 random good games.
+Only reply in JSON format. Return exactly 10 games that perfectly fits the user prompt if it exists, each with a title, year of release, and a non-spoiler reason why it fits the user's prompt. If no prompt, generate 10 random good games.
 Do not use regular text or any explanation.`;
 
     if (opts.useProfile && opts.formattedReviews) {

@@ -8,6 +8,13 @@ import "./game.css";
 // Import the new client component
 import GameActions from "./GameActions";
 
+interface PublicReview {
+    user_id: string;
+    username: string;
+    rating: number;
+    review_text: string;
+}
+
 // IGDB token logic
 let igdbAccessToken = "";
 async function getIgdbToken() {
@@ -98,7 +105,7 @@ export default async function GamePage({ params }: { params: { id: string } }) {
             <div className="game-reviews-container">
                 <h3>User Reviews</h3>
                 {publicReviews.length > 0 ? (
-                    publicReviews.map((review: any) => (
+                    publicReviews.map((review: PublicReview) => (
                         <div key={review.user_id} className="game-review-card">
                             <div className="game-review-header">
                                 <Link href={`/${review.username}/reviews`} className="game-review-username">

@@ -10,11 +10,32 @@ import ReviewCard from "@/components/ReviewCard";
 import Pagination from "@/components/Pagination";
 import "./profile.css";
 
+interface Review {
+    game_id: number;
+    user_id: string;
+    rating: number;
+    review_text: string | null;
+    created_at: string;
+    games: {
+        game_title: string;
+        cover_url: string | null;
+    } | null;
+}
+
+interface Profile {
+    id: string;
+    reviews: Review[];
+    totalReviews: number;
+    followersCount: number;
+    followingCount: number;
+    isFollowing: boolean;
+}
+
 export default function ProfilePage() {
     const router = useRouter();
 
     // main profile state object
-    const [profile, setProfile] = useState<any>(null);
+    const [profile, setProfile] = useState<Profile | null>(null);
 
     // loading and error state
     const [loading, setLoading] = useState(true);
@@ -43,25 +64,33 @@ export default function ProfilePage() {
 
     // delete review handler
     const handleRemoveReview = async (gameId: number) => {
+        if (!profile) return;
+
         const originalReviews = [...profile.reviews];
 
         // update state optimistically
-        setProfile((p: any) => ({
-            ...p,
-            reviews: p.reviews.filter((r: any) => r.game_id !== gameId),
-            totalReviews: p.totalReviews - 1,
-        }));
+        setProfile(prevProfile => {
+            if (!prevProfile) return null;
+            return {
+                ...prevProfile,
+                reviews: prevProfile.reviews.filter((r) => r.game_id !== gameId),
+                totalReviews: prevProfile.totalReviews - 1,
+            };
+        });
 
         try {
             await axios.delete('/api/reviews', { data: { gameId } });
         } catch (err) {
             // if request fails, revert UI state
             alert("Failed to delete review.");
-            setProfile((p: any) => ({
-                ...p,
-                reviews: originalReviews,
-                totalReviews: p.totalReviews + 1
-            }));
+            setProfile(prevProfile => {
+                if (!prevProfile) return null;
+                return {
+                    ...prevProfile,
+                    reviews: originalReviews,
+                    totalReviews: prevProfile.totalReviews + 1,
+                }
+            });
         }
     };
 
@@ -81,7 +110,7 @@ export default function ProfilePage() {
                         {/* placeholder for future settings/actions */}
                         <button className="profile-option-btn">...</button>
                     </div>
-                    <ProfileStats 
+                    <ProfileStats
                         followers={profile.followersCount}
                         following={profile.followingCount}
                         reviews={profile.totalReviews}
@@ -93,8 +122,8 @@ export default function ProfilePage() {
 
             {/* display all user reviews */}
             <div className="review-grid">
-                {profile.reviews.map((review: any) => (
-                    <ReviewCard 
+                {profile.reviews.map((review: Review) => (
+                    <ReviewCard
                         key={review.game_id}
                         review={review}
                         onDelete={handleRemoveReview}
@@ -105,7 +134,7 @@ export default function ProfilePage() {
 
             {/* only show pagination if user has more than one page of reviews */}
             {profile.totalReviews > 50 && (
-                <Pagination 
+                <Pagination
                     page={page}
                     totalReviews={profile.totalReviews}
                     onPrev={() => setPage(p => p - 1)}

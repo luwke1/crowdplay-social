@@ -57,10 +57,14 @@ export default function GameActions({ gameDetails, initialUserReview }: GameActi
             const updatedReview = await res.json();
             setUserReview(updatedReview);
             // Re-fetch server components to reflect new public review
-            router.refresh(); 
+            router.refresh();
 
-        } catch (err: any) {
-            alert(err.message);
+        } catch (err) {
+            if (err instanceof Error) {
+                alert(err.message);
+            } else {
+                alert("An unknown error occurred.");
+            }
         } finally {
             setIsSubmitting(false);
         }

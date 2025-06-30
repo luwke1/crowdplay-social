@@ -9,6 +9,26 @@ import ProfileStats from "@/components/ProfileStats";
 import ReviewCard from "@/components/ReviewCard";
 import "@/profile/profile.css";
 
+interface Review {
+    game_id: number;
+    user_id: string;
+    rating: number;
+    review_text: string | null;
+    created_at: string;
+    games: {
+        game_title: string;
+        cover_url: string | null;
+    } | null;
+}
+
+interface Profile {
+    isFollowing: boolean;
+    followersCount: number;
+    followingCount: number;
+    totalReviews: number;
+    reviews: Review[];
+}
+
 export default function ReviewsPage() {
     const router = useRouter();
     const { username } = useParams() as { username: string };
@@ -17,7 +37,7 @@ export default function ReviewsPage() {
     const [page, setPage] = useState(0);
 
     // holds profile data from backend
-    const [profile, setProfile] = useState<any>(null);
+    const [profile, setProfile] = useState<Profile | null>(null);
 
     // basic loading and error tracking
     const [loading, setLoading] = useState(true);
@@ -53,15 +73,15 @@ export default function ReviewsPage() {
     // follow/unfollow toggle logic
     const handleFollowToggle = async () => {
         try {
-            if (profile.isFollowing) {
+            if (profile && profile.isFollowing) {
                 // unfollow API call
-                await fetch(`/api/follow?username=${username}`,{method:'DELETE'});
+                await fetch(`/api/follow?username=${username}`, { method: 'DELETE' });
                 setProfile((p: any) => ({ ...p, isFollowing: false, followersCount: p.followersCount - 1 }));
             } else {
                 // follow API call
-                await fetch('/api/follow', { 
+                await fetch('/api/follow', {
                     method: 'POST',
-                    headers:{
+                    headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({ usernameToFollow: username })
@@ -96,10 +116,10 @@ export default function ReviewsPage() {
                         {/* might use this button later for dropdown/settings */}
                         <button className="profile-option-btn">...</button>
                     </div>
-                    <ProfileStats 
-                        followers={profile.followersCount} 
-                        following={profile.followingCount} 
-                        reviews={profile.totalReviews} 
+                    <ProfileStats
+                        followers={profile.followersCount}
+                        following={profile.followingCount}
+                        reviews={profile.totalReviews}
                     />
                 </div>
             </div>
@@ -109,20 +129,20 @@ export default function ReviewsPage() {
             {/* list of ReviewCards */}
             <div className="review-grid">
                 {profile.reviews.map((review: any) => (
-                    <ReviewCard 
-                        key={review.game_id} 
-                        review={review} 
-                        onClick={(id) => router.push(`/game/${id}`)} 
+                    <ReviewCard
+                        key={review.game_id}
+                        review={review}
+                        onClick={(id) => router.push(`/game/${id}`)}
                     />
                 ))}
             </div>
 
             {/* pagination controls */}
-            <Pagination 
-                page={page} 
-                totalReviews={profile.totalReviews} 
-                onPrev={() => setPage(p => p - 1)} 
-                onNext={() => setPage(p => p + 1)} 
+            <Pagination
+                page={page}
+                totalReviews={profile.totalReviews}
+                onPrev={() => setPage(p => p - 1)}
+                onNext={() => setPage(p => p + 1)}
             />
         </div>
     );
