@@ -158,12 +158,53 @@
 }
 
 .game-review-card {
+    display: flex;
+    gap: 15px; 
+    background-color: #27272a;
+    padding: 16px;
+    border-radius: 12px;
     margin-top: 20px;
-    padding: 10px;
+    border: 1px solid #3f3f46;
+    transition: all 0.2s ease-in-out;
+}
+
+.review-content {
+    display: flex;
+    flex-direction: column;
     width: 100%;
-    background-color: #333;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.game-review-header {
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.game-review-username h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #e4e4e7;
+    margin: 0;
+}
+
+a.game-review-username {
+    text-decoration: none;
+}
+
+a.game-review-username:hover h4 {
+    text-decoration: underline;
+}
+
+.game-review-rating {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #10d610;
+}
+
+.game-review-text {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #d4d4d8;
 }
 
 .game-reviews-container{

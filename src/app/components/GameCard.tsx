@@ -1,5 +1,6 @@
 import React from "react";
 import "./GameCard.css";
+import Image from "next/image";
 
 interface Game {
   id: number;
@@ -15,13 +16,18 @@ interface GameCardProps {
 
 // GameCard component
 const GameCard: React.FC<GameCardProps> = ({ game, onClick }) => {
+  const coverUrl = game.cover?.url
+    ? `https:${game.cover.url.replace("t_thumb", "t_cover_big")}`
+    : "/default-cover.jpg";
   return (
     <div className="game-card" onClick={() => onClick(game.id)}>
       {game.cover && (
-        <img
+        <Image
           className="game-cover"
-          src={game.cover.url.replace("t_thumb", "t_cover_big")}
+          src={coverUrl}
           alt={game.name}
+          width={110}
+          height={160}
         />
       )}
     </div>
