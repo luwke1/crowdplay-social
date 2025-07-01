@@ -176,3 +176,25 @@
     background-color: #555;
     cursor: not-allowed;
 }
+
+@media (max-width: 768px) {
+    .profile-details {
+        flex-direction: column;
+        height: auto;
+        padding: 20px 10px;
+        text-align: center;
+    }
+
+    .profile-image {
+        margin-right: 0;
+        margin-bottom: 20px;
+        width: 120px;
+        height: 120px;
+    }
+
+    .profile-title {
+        justify-items: center;
+        row-gap: 15px;
+        margin-bottom: 20px;
+    }
+}
