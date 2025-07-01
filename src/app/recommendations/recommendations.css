@@ -1,11 +1,13 @@
 .recommendationsBody {
     color: white;
-    padding-bottom: 10px;
+    padding: 20px;
     width: 100%;
+    max-width: 900px;
     margin: 85px auto;
     display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: center;
+    box-sizing: border-box;
 }
 
 .recommendationsBody h1 {
@@ -16,7 +18,7 @@
 }
 
 .recSection {
-    width: 900px;
+    width: 100%;
     margin-bottom: 20px;
     display: flex;
     gap: 20px;
@@ -24,14 +26,15 @@
     flex-direction: column;
 }
 
-.enableTaste{
+.enableTaste {
     color: white;
     font-size: 20px;
     margin-bottom: 10px;
 }
 
 .recSettings {
-    width: 80%;
+    width: 100%;
+    max-width: 600px;
     margin-bottom: 40px;
     display: flex;
     gap: 20px;
@@ -40,56 +43,51 @@
 }
 
 .recSettings input {
-    width: 600px;
-    height: 30px;
+    width: 100%;
+    height: 40px;
     border-radius: 10px;
     border: none;
-    padding-left: 10px;
-    font-size: 20px;
+    padding: 0 15px;
+    font-size: 18px;
     color: black;
     outline: none;
-}
-
-.searching {
-    color: white;
-}
-
-.wave {
-    width: 5px;
-    height: 50px;
-    background: linear-gradient(45deg, #59b0f6, #fff);
-    margin: 10px;
-    animation: wave 1s linear infinite;
-    border-radius: 20px;
+    box-sizing: border-box;
 }
 
 .searchArea {
+    width: 100%;
     margin-bottom: 10px;
 }
 
 .generateBtn {
-    background-color: #444;
+    background-color: #9a96e9;
     color: white;
     border: none;
-    padding: 10px 15px;
-    margin-left: 10px;
+    padding: 12px 20px;
     cursor: pointer;
     border-radius: 5px;
-    font-size: 14px;
-    transition: 0.3s;
+    font-size: 16px;
+    transition: background-color 0.3s;
+    width: 40%;
 }
 
 .generateBtn:hover {
-    background-color: #555;
-    /* box-shadow: 0px 0px 5px 1px white; */
+    background-color: #6a6aa3;
+}
+
+.generateBtn:disabled {
+    background-color: #222;
+    color: #666;
+    cursor: not-allowed;
 }
 
 .loadingBarContainer {
     width: 100%;
-    background: #eee;
+    background: #333;
     height: 5px;
     margin-top: 10px;
     overflow: hidden;
+    border-radius: 5px;
 }
 
 .loadingBar {
@@ -109,52 +107,35 @@
     }
 }
 
-.wave:nth-child(2) {
-    animation-delay: 0.1s;
-}
+/* ===== Mobile Responsive Styles ===== */
 
-.wave:nth-child(3) {
-    animation-delay: 0.2s;
-}
-
-.wave:nth-child(4) {
-    animation-delay: 0.3s;
-}
-
-.wave:nth-child(5) {
-    animation-delay: 0.4s;
-}
-
-.wave:nth-child(6) {
-    animation-delay: 0.5s;
-}
-
-.wave:nth-child(7) {
-    animation-delay: 0.6s;
-}
-
-.wave:nth-child(8) {
-    animation-delay: 0.7s;
-}
-
-.wave:nth-child(9) {
-    animation-delay: 0.8s;
-}
-
-.wave:nth-child(10) {
-    animation-delay: 0.9s;
-}
-
-@keyframes wave {
-    0% {
-        transform: scale(0);
+@media (max-width: 768px) {
+    .recommendationsBody {
+        margin-top: 80px;
+        padding: 15px;
     }
 
-    50% {
-        transform: scale(1);
+    .recommendationsBody h1 {
+        font-size: 24px;
+        margin-bottom: 30px;
     }
 
-    100% {
-        transform: scale(0);
+    .recSettings {
+        gap: 15px;
+    }
+
+    .recSettings input {
+        height: 45px;
+        font-size: 16px;
+    }
+
+    .generateBtn {
+        padding: 15px;
+        font-size: 16px;
+    }
+
+    /* Target the label of the MUI Switch component */
+    .MuiFormControlLabel-label {
+        font-size: 14px !important;
     }
 }

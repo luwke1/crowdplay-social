@@ -9,6 +9,7 @@
 body {
   background-color: #18181b;
   font-family: 'Montserrat';
+  overflow-x: hidden;
 }
 h2 {
   color: white;
