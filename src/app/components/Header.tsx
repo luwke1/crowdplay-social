@@ -14,6 +14,10 @@ export default function Header({ user: serverUser }: { user: User | null }) {
     const router = useRouter();
 
     useEffect(() => {
+        setUser(serverUser);
+    }, [serverUser]);
+
+    useEffect(() => {
         const supabase = createClient();
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             setUser(session?.user ?? null);
@@ -29,7 +33,6 @@ export default function Header({ user: serverUser }: { user: User | null }) {
         event.preventDefault();
         const supabase = createClient();
         await supabase.auth.signOut();
-        // The onAuthStateChange listener above will handle the UI update and refresh.
         router.push('/login');
     };
 

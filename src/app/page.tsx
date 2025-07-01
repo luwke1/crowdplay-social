@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import axios from "axios";
 import "./page.css";
 import GameCard from "./components/GameCard";
 
@@ -16,13 +15,13 @@ interface Game {
 export default function HomePage() {
   const router = useRouter();
 
-  // Separate state for popular games pagination
+  // State for popular games pagination
   const [popularGames, setPopularGames] = useState<Game[]>([]);
   const [popularPage, setPopularPage] = useState(1);
   const [loadingPopular, setLoadingPopular] = useState(false);
   const [popularError, setPopularError] = useState("");
 
-  // Separate state for latest games pagination
+  // State for latest games pagination
   const [latestGames, setLatestGames] = useState<Game[]>([]);
   const [latestPage, setLatestPage] = useState(1);
   const [loadingLatest, setLoadingLatest] = useState(false);
@@ -33,11 +32,15 @@ export default function HomePage() {
     async function getPopularGames() {
       setLoadingPopular(true);
       try {
-        const response = await axios.get(`/api/igdb?page=${popularPage}`);
+        const response = await fetch(`/api/igdb?page=${popularPage}`);
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        const data = await response.json();
         if (popularPage === 1) {
-          setPopularGames(response.data); // replace on first page load
+          setPopularGames(data); // replace on first page load
         } else {
-          setPopularGames(prev => [...prev, ...response.data]); // append on next pages
+          setPopularGames((prev) => [...prev, ...data]); // append on next pages
         }
       } catch (err) {
         if (err instanceof Error) {
@@ -56,11 +59,17 @@ export default function HomePage() {
     async function getLatestGames() {
       setLoadingLatest(true);
       try {
-        const response = await axios.get(`/api/igdb?type=latest&page=${latestPage}`);
+        const response = await fetch(
+          `/api/igdb?type=latest&page=${latestPage}`
+        );
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        const data = await response.json();
         if (latestPage === 1) {
-          setLatestGames(response.data);
+          setLatestGames(data);
         } else {
-          setLatestGames(prev => [...prev, ...response.data]);
+          setLatestGames((prev) => [...prev, ...data]);
         }
       } catch (err) {
         console.error("Failed to fetch latest games:", err);
@@ -93,7 +102,9 @@ export default function HomePage() {
           {/* <button disabled={popularPage === 1} onClick={() => setPopularPage(popularPage - 1)}>
             Previous
           </button> */}
-          <button onClick={() => setPopularPage(popularPage + 1)}>Load More</button>
+          <button onClick={() => setPopularPage(popularPage + 1)}>
+            Load More
+          </button>
         </div>
       </div>
 
@@ -106,11 +117,12 @@ export default function HomePage() {
           {latestGames.map((game) => (
             <GameCard key={game.id} game={game} onClick={handleGameClick} />
           ))}
-
         </div>
         {loadingLatest && <p className="loadingGames">Loading more games...</p>}
         <div className="pagination-buttons">
-          <button onClick={() => setLatestPage(latestPage + 1)}>Load More</button>
+          <button onClick={() => setLatestPage(latestPage + 1)}>
+            Load More
+          </button>
         </div>
       </div>
     </div>
