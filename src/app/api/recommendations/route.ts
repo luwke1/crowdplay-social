@@ -17,6 +17,10 @@ export async function POST(req: Request) {
 
     const { prompt, useProfile } = await req.json();
 
+    if (typeof prompt !== 'string' || prompt.trim() === '') {
+        return NextResponse.json({ error: "A valid prompt is required." }, { status: 400 });
+    }
+
     let reviewsFormatted: string | undefined;
 
     if (useProfile) {
@@ -60,7 +64,7 @@ export async function POST(req: Request) {
         }
         // Parse the JSON response
         const jsonResponse = JSON.parse(responseText);
-        
+
         if (!Array.isArray(jsonResponse) || jsonResponse.length === 0) {
             return NextResponse.json(jsonResponse);
         }

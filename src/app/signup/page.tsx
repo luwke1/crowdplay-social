@@ -6,10 +6,10 @@ import "../login/login.css";
 export default async function SignupPage({
 	searchParams,
 }: {
-	searchParams: { message: string };
+	searchParams: Promise<{ message: string }>;
 }) {
 
-	const message = searchParams.message;
+	const message = (await searchParams).message;
 
 	return (
 		<div className="login-container">

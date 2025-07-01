@@ -1,11 +1,13 @@
 import { login } from "./actions";
 import "./login.css";
 
-export default function LoginPage({
+export default async function LoginPage({
     searchParams,
 } : {
-    searchParams: {message: string}
+    searchParams: Promise<{message: string}>
 }) {
+    const message = (await searchParams).message
+
     return (
         <div className="login-container">
             <div className="recruiter-message">
@@ -18,9 +20,9 @@ export default function LoginPage({
                 <input name="email" type="email" placeholder="Email" required />
                 <input name="password" type="password" placeholder="Password" required />
                 <button type="submit">Login</button>
-                {searchParams.message && (
+                {message && (
                     <p className="error-message">
-                        {searchParams.message}
+                        {message}
                     </p>
                 )}
             </form>

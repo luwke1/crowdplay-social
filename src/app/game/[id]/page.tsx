@@ -26,8 +26,8 @@ async function getGameDetails(gameId: number) {
     }
 }
 
-export default async function GamePage({ params }: { params: { id: string } }) {
-    const gameId = Number(params.id);
+export default async function GamePage({ params }: { params: Promise<{ id: string }> }) {
+    const gameId = Number((await params).id);
     if (isNaN(gameId)) {
         notFound();
     }
