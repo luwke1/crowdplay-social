@@ -37,10 +37,8 @@ export default function RecommendationsPage() {
             setIsLoggedIn(!!session);
         });
 
-        // restore last recs from localStorage if available
         const stored = localStorage.getItem("crowdplay_recommendations");
         if (stored) {
-            // Safely parse JSON
             const storedRecs = JSON.parse(stored) as GameRecommendation[];
             setRecommendations(storedRecs);
         }
@@ -82,9 +80,15 @@ export default function RecommendationsPage() {
                     <input onChange={(e) => setPrompt(e.target.value)} placeholder="e.g., games with a great story" disabled={loading} value={prompt} />
                 </div>
                 <FormControlLabel control={<Switch checked={useProfile} onChange={(e) => setUseProfile(e.target.checked)} disabled={!isLoggedIn || loading} />} label="Generate Based on Your Reviews" />
-                <button className="generateBtn" onClick={generateRecommendations} disabled={loading || prompt.length < 5 || (useProfile && !isLoggedIn)}>
+                <button
+                    className="generateBtn"
+                    disabled={!isLoggedIn || loading || prompt.length < 5}
+                >
                     {loading ? "Generating..." : "Generate"}
                 </button>
+                {!isLoggedIn && (
+                    <p style={{ marginTop: '10px', color: '#aaa' }}>Please log in to generate recommendations.</p>
+                )}
             </div>
             <div className="recSection">
                 {recommendations.map((game, index) => (

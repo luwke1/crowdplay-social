@@ -66,30 +66,41 @@ export default function ReviewsPage() {
 
     // follow/unfollow toggle logic
     const handleFollowToggle = async () => {
-        if (!profile) return;
-        try {
-            if (profile.isFollowing) {
-                // unfollow API call
-                await fetch(`/api/follow?username=${username}`, { method: 'DELETE' });
-                setProfile((p: Profile | null) => p ? { ...p, isFollowing: false, followersCount: p.followersCount - 1 } : null);
-            } else {
-                // follow API call
-                await fetch('/api/follow', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ usernameToFollow: username })
-                });
-                setProfile((p: Profile | null) => p ? { ...p, isFollowing: true, followersCount: p.followersCount + 1 } : null);
-            }
-        } catch (err) {
-            const isUnauthorized = (err as any)?.response?.status === 401;
-            if (isUnauthorized) {
-                router.push('/login');
-            } else {
-                alert("Could not update follow status.");
-            }
+    if (!profile) return;
+    
+    try {
+        let response;
+        if (profile.isFollowing) {
+            // unfollow API call
+            response = await fetch(`/api/follow?username=${username}`, { method: 'DELETE' });
+        } else {
+            // follow API call
+            response = await fetch('/api/follow', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ usernameToFollow: username })
+            });
         }
-    };
+        if (!response.ok) {
+            // If user is not authorized (401), redirect to login
+            if (response.status === 401) {
+                router.push('/login');
+                return;
+            }
+            throw new Error("Failed to update follow status.");
+        }
+
+        setProfile((p: Profile | null) => {
+            if (!p) return null;
+            const isFollowing = !p.isFollowing;
+            const followersCount = isFollowing ? p.followersCount + 1 : p.followersCount - 1;
+            return { ...p, isFollowing, followersCount };
+        });
+
+    } catch (err) {
+        alert((err as Error).message);
+    }
+};
 
     if (loading) return <div className="profile-container"><p>Loading...</p></div>;
     if (error) return <div className="profile-container"><p className="error">{error}</p></div>;
