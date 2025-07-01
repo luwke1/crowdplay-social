@@ -1,23 +1,33 @@
 "use client";
 
-import React, { use } from 'react';
-import { useEffect } from 'react';
+import React from 'react';
 import { useRouter } from 'next/navigation';
-
+import Image from 'next/image';
 import "./RecommendCard.css";
+
+interface IgdbData {
+    cover?: { url: string; };
+}
 
 interface Recommendation {
     title: string;
     year: string;
     reason: string;
-    igdb: any; // Optional IGDB data
+    igdb: IgdbData | null;
 }
 
 
 export default function RecommendCard({ recommendation }: { recommendation: Recommendation }) {
     const { title, year, reason, igdb } = recommendation;
-    const sourceImage = igdb?.cover?.url.replace("t_thumb", "t_cover_big") || "/default-profile.jpg";
     const router = useRouter();
+
+    let sourceImage = "/default-cover.jpg";
+    if (igdb?.cover?.url) {
+        sourceImage = igdb.cover.url.startsWith("//")
+            ? `https:${igdb.cover.url}`
+            : igdb.cover.url;
+        sourceImage = sourceImage.replace("t_thumb", "t_cover_big");
+    }
 
     const handleGameClick = () => {
         console.log("Game clicked:", title);
@@ -26,7 +36,7 @@ export default function RecommendCard({ recommendation }: { recommendation: Reco
 
     return (
         <div className='recommendationCard' onClick={handleGameClick}>
-            <img src={sourceImage} alt="" />
+            <Image src={sourceImage} alt={`Cover art for ${title}`} width={100} height={128} />
             <div className='recDetails'>
                 <h4>{title} ({year})</h4>
                 <p>{reason}</p>

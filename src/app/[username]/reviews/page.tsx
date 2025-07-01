@@ -55,7 +55,6 @@ export default function ReviewsPage() {
                 const data: Profile = await res.json();
                 setProfile(data);
             } catch (err) {
-                // Correctly type the caught error
                 console.error("Failed to fetch profile:", err);
                 setError((err as Error).message || "Failed to load profile.");
             } finally {
@@ -83,7 +82,6 @@ export default function ReviewsPage() {
                 setProfile((p: Profile | null) => p ? { ...p, isFollowing: true, followersCount: p.followersCount + 1 } : null);
             }
         } catch (err) {
-            // Check for Axios-like error structure safely
             const isUnauthorized = (err as any)?.response?.status === 401;
             if (isUnauthorized) {
                 router.push('/login');
