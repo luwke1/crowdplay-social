@@ -68,8 +68,7 @@ export async function GET(
             isFollowing,
         });
 
-    } catch (error: any) {
-        // fallback if anything throws
-        return NextResponse.json({ error: error.message }, { status: 500 });
+    } catch (error) {
+        return NextResponse.json({ error: (error as Error).message }, { status: 500 });
     }
 }

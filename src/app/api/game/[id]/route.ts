@@ -7,7 +7,7 @@ export async function GET(
     { params }: { params: { id: string } }
 ) {
     const supabase = await createClient();
-    
+
     const gameId = Number(params.id);
     if (isNaN(gameId)) return NextResponse.json({ error: "Invalid Game ID" }, { status: 400 });
 
@@ -30,7 +30,7 @@ export async function GET(
             publicReviews: publicReviewsRes.data || [],
             userReview: userReviewRes.data, // Will be null if not logged in or no review
         });
-    } catch (error: any) {
+    } catch (_error) {
         return NextResponse.json({ error: "Failed to fetch game page data" }, { status: 500 });
     }
 }

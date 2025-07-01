@@ -1,22 +1,30 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Image from "next/image";
 import './search.css';
+
+// Added specific type for search results
+interface GameResult {
+    id: number;
+    name: string;
+    cover?: {
+        url: string;
+    };
+}
 
 export default function SearchPage() {
     const router = useRouter();
-
-    // grabs the `q` query param from the URL (e.g. ?q=halo)
     const searchParams = useSearchParams();
     const query = searchParams.get("q") || "";
 
     const [loading, setLoading] = useState(false);
-    const [results, setResults] = useState([]);
-    const [page, setPage] = useState(1); // not used yet, but set up for future pagination
+    const [results, setResults] = useState<GameResult[]>([]);
 
     // fetch results from backend route
-    const fetchResults = async (pageNumber: number) => {
+    const fetchResults = useCallback(async () => {
+        if (!query) return;
         setLoading(true);
         try {
             const response = await fetch(`/api/igdb?q=${query}`);
@@ -26,12 +34,12 @@ export default function SearchPage() {
             console.error("Failed to fetch search results:", error);
         }
         setLoading(false);
-    };
+    }, [query]);
 
     // fetch when page loads or query changes
     useEffect(() => {
-        if (query) fetchResults(page);
-    }, [page, query]);
+        fetchResults();
+    }, [fetchResults]);
 
     // navigate to clicked game page
     const handleGameClick = (gameId: number) => {
@@ -44,25 +52,18 @@ export default function SearchPage() {
                 <p>Loading...</p>
             ) : (
                 <div className="search-results">
-                    <h1>Search Results for "{query}"</h1>
+                    <h1>Search Results for &quot;{query}&quot;</h1>
 
-                    {/* render each result card */}
-                    {results.map((game: any) => (
+                    {results.map((game) => (
                         <div onClick={() => handleGameClick(game.id)} className="result-card" key={game.id}>
-                            <div>
-                                {game.cover?.url ? (
-                                    <img
-                                        src={game.cover.url.replace("t_thumb", "t_cover_big")}
-                                        alt={game.name}
-                                        width="100"
-                                    />
-                                ) : (
-                                    <img src="/default-cover.jpg" alt="Default Cover" width="100" />
-                                )}
-                            </div>
+                            <Image
+                                src={game.cover?.url.replace("t_thumb", "t_cover_big") || "/default-cover.jpg"}
+                                alt={game.name || "Game cover"}
+                                width={100}
+                                height={128}
+                            />
                             <div className="result-info">
                                 <h2>{game.name}</h2>
-                                {/* <p>{game.summary}</p> */}
                             </div>
                         </div>
                     ))}

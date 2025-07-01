@@ -14,8 +14,8 @@ export async function POST(request: Request) {
 
         await supabase.from("followers").insert({ follower_id: user.id, followed_id: followedUser.id });
         return NextResponse.json({ success: true });
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+    } catch (error) {
+        return NextResponse.json({ error: (error as Error).message }, { status: 500 });
     }
 }
 
@@ -34,7 +34,7 @@ export async function DELETE(request: Request) {
 
         await supabase.from("followers").delete().match({ follower_id: user.id, followed_id: followedUser.id });
         return NextResponse.json({ success: true });
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+    } catch (error) {
+        return NextResponse.json({ error: (error as Error).message }, { status: 500 });
     }
 }
