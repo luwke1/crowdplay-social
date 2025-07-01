@@ -5,7 +5,6 @@ const CLIENT_SECRET = process.env.IGDB_CLIENT_SECRET;
 const TOKEN_URL = "https://id.twitch.tv/oauth2/token";
 const IGDB_URL = "https://api.igdb.com/v4";
 
-// Getting access token in a serverless environment, this is more reliable than in-memory caching.
 async function getAccessToken() {
     try {
         const response = await axios.post(TOKEN_URL, null, {
