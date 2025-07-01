@@ -17,15 +17,22 @@ export async function GET(req: Request) {
         } else if (searchTerm) {
             queryBody = `search "${searchTerm}"; fields name, cover.url, rating, rating_count, summary, genres.name, release_dates.date; where cover != null & category = (0, 4, 8, 9) & parent_game = null; limit 20; offset ${offset};`;
         } else if (requestType === "latest") {
-            const oneMonthAgo = Math.floor(Date.now() / 1000) - 2592000;
-            queryBody = `fields name, cover.url, rating, summary, genres.name, release_dates.human, release_dates.date; where first_release_date > ${oneMonthAgo} & cover != null; sort popularity desc; limit 20; offset ${offset};`;
+            const twoMonthsAgo = Math.floor(Date.now() / 1000) - 15778800;
+            // For recently released and popular games
+            queryBody = `
+        fields name, cover.url, rating, total_rating_count, first_release_date;
+        where first_release_date > ${twoMonthsAgo} & first_release_date < ${Math.floor(Date.now() / 1000)} & total_rating_count > 25;
+        sort total_rating_count desc;
+        limit 20;
+        offset ${offset};
+    `;
         } else {
             // Default to popular games
             queryBody = `fields name, cover.url, rating, rating_count; where rating > 80 & rating_count > 50 & cover != null; sort rating_count desc; limit 20; offset ${offset};`;
         }
 
         const data = await queryIgdb("games", queryBody);
-        
+
         // Handle single game result
         if (gameId) {
             if (!data || data.length === 0) {
@@ -33,7 +40,7 @@ export async function GET(req: Request) {
             }
             return NextResponse.json(data[0]);
         }
-        
+
         return NextResponse.json(data);
 
     } catch (error) {

@@ -3,10 +3,10 @@ import { NextResponse } from "next/server";
 
 export async function GET(
     request: Request,
-    { params }: { params: { username: string } }
+    { params }: { params: Promise<{ username: string }> }
 ) {
     const supabase = await createClient();
-    const { username } = params;
+    const { username } = await params;
 
     // get pagination info from query string
     const { searchParams } = new URL(request.url);

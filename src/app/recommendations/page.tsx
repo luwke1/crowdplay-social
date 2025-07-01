@@ -80,7 +80,12 @@ export default function RecommendationsPage() {
                 <div className="searchArea">
                     <input onChange={(e) => setPrompt(e.target.value)} placeholder="e.g., games with a great story" disabled={loading} value={prompt} />
                 </div>
-                <FormControlLabel control={<Switch checked={useProfile} onChange={(e) => setUseProfile(e.target.checked)} disabled={!isLoggedIn || loading} />} label="Generate Based on Your Reviews" />
+                <FormControlLabel sx={{
+                    '& .MuiSwitch-track': {
+                        backgroundColor: '#808080',
+                        opacity: 0.5,
+                    },
+                }} control={<Switch checked={useProfile} onChange={(e) => setUseProfile(e.target.checked)} disabled={!isLoggedIn || loading} />} label="Generate Based on Your Reviews" />
                 <button
                     className="generateBtn"
                     onClick={generateRecommendations}

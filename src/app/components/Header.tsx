@@ -8,7 +8,7 @@ import Image from "next/image";
 import "./Header.css";
 import type { User } from '@supabase/supabase-js';
 
-// The component accepts server-rendered user as a prop
+// Header takes server-rendered user as a prop
 export default function Header({ user: serverUser }: { user: User | null }) {
     const [user, setUser] = useState<User | null>(serverUser);
     const router = useRouter();

@@ -99,9 +99,6 @@ export default function HomePage() {
         </div>
         {loadingPopular && <p className="loadingGames">Loading more games...</p>}
         <div className="pagination-buttons">
-          {/* <button disabled={popularPage === 1} onClick={() => setPopularPage(popularPage - 1)}>
-            Previous
-          </button> */}
           <button onClick={() => setPopularPage(popularPage + 1)}>
             Load More
           </button>

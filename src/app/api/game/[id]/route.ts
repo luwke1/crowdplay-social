@@ -4,10 +4,11 @@ import { queryIgdb } from "@/services/igdbService";
 
 export async function GET(
     _request: Request,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
 ) {
+    const { params } = context;
     const supabase = await createClient();
-    const gameId = Number(params.id);
+    const gameId = Number((await params).id);
 
     if (isNaN(gameId)) {
         return NextResponse.json({ error: "Invalid Game ID" }, { status: 400 });
@@ -19,7 +20,7 @@ export async function GET(
         const igdbQuery = `fields name, cover.image_id, rating, summary, genres.name, release_dates.date; where id = ${gameId};`;
 
         const [igdbData, publicReviewsRes, userReviewRes] = await Promise.all([
-            queryIgdb("games", igdbQuery).then(data => data[0] || null),
+            queryIgdb("games", igdbQuery).then(data => data?.[0] || null),
             supabase.rpc("get_game_reviews", { game_id_input: gameId }),
             user
                 ? supabase.from("reviews").select("*").eq("user_id", user.id).eq("game_id", gameId).maybeSingle()
