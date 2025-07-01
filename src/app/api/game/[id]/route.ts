@@ -30,7 +30,7 @@ export async function GET(
             publicReviews: publicReviewsRes.data || [],
             userReview: userReviewRes.data, // Will be null if not logged in or no review
         });
-    } catch (_error) {
-        return NextResponse.json({ error: "Failed to fetch game page data" }, { status: 500 });
+    } catch (err) {
+        return NextResponse.json({ error: err }, { status: 500 });
     }
 }
