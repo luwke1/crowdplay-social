@@ -1,37 +1,41 @@
-
 .main-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     padding: 20px;
-    max-width: 1200px;
-    margin: 60px auto;}
+    max-width: 1600px;
+    margin: 60px auto;
+}
 
 .game-list-container {
+    width: 80%;
     margin-bottom: 60px;
 }
 
 .game-list-container h2 {
-    /* margin-bottom: 20px; */
     font-size: 1.5rem;
     color: #ffffff;
 }
 
-.pagination-buttons{
+.pagination-buttons {
     display: flex;
     justify-content: center;
-    height: 20px;
-    gap: 10px;
     margin-top: 20px;
 }
-.pagination-buttons button{
+
+.pagination-buttons button {
     border-radius: 10px;
-    height: 30px;
+    height: 40px;
     width: 300px;
     padding: 5px 20px;
     background-color: #27272a;
     color: white;
     transition: background-color 0.5s;
+    border: none;
+    font-size: 1rem;
 }
 
-.pagination-buttons button:hover{
+.pagination-buttons button:hover {
     background-color: rgb(0, 0, 0);
     color: white;
     cursor: pointer;
@@ -40,19 +44,62 @@
 .game-list {
     color: white;
     display: grid;
-    grid-template-columns: repeat(10, 0.1fr);
     gap: 10px;
+    grid-template-columns: repeat(10, 1fr);
 }
 
-.loadingGames{
+.loadingGames {
     margin-top: 20px;
     color: white;
-    width: 200px;
+    text-align: center;
+    width: 100%;
 }
 
+@media (max-width: 1800px) {
+    .game-list {
+        grid-template-columns: repeat(9, 1fr);
+    }
+}
 
-@media (max-width: 600px) {
+@media (max-width: 1300px) {
+    .game-list {
+        grid-template-columns: repeat(8, 1fr);
+    }
+}
+
+@media (max-width: 1106px) {
+    .game-list {
+        grid-template-columns: repeat(6, 1fr);
+    }
+}
+
+@media (max-width: 800px) {
+    .game-list {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}
+
+@media (max-width: 720px) {
+    .game-list {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (max-width: 550px) {
     .main-body {
         padding: 10px;
+        margin-top: 80px;
+    }
+
+    .game-list-container h2 {
+        font-size: 1.25rem;
+    }
+
+    .game-list {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .pagination-buttons button {
+        width: 100%;
     }
 }
