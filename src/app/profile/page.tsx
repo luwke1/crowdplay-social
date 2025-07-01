@@ -72,7 +72,7 @@ export default function ProfilePage() {
 
         try {
             await axios.delete('/api/reviews', { data: { gameId } });
-        } catch (_err) {
+        } catch {
             alert("Failed to delete review.");
             setProfile(prevProfile => {
                  if (!prevProfile) return null;

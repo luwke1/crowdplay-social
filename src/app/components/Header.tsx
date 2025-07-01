@@ -3,17 +3,19 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
+import Link from "next/link";
+import Image from "next/image";
 import "./Header.css";
 import type { User } from '@supabase/supabase-js';
 
-// The component now accepts the server-rendered user as a prop
+// The component accepts server-rendered user as a prop
 export default function Header({ user: serverUser }: { user: User | null }) {
     const [user, setUser] = useState<User | null>(serverUser);
     const router = useRouter();
 
     useEffect(() => {
         const supabase = createClient();
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             setUser(session?.user ?? null);
             router.refresh();
         });
@@ -22,7 +24,6 @@ export default function Header({ user: serverUser }: { user: User | null }) {
             subscription.unsubscribe();
         };
     }, [router]);
-
 
     const handleLogout = async (event: React.MouseEvent<HTMLAnchorElement>) => {
         event.preventDefault();
@@ -42,18 +43,18 @@ export default function Header({ user: serverUser }: { user: User | null }) {
     return (
         <div className="header">
             <div className="search-bar">
-                <img src="/search.svg" alt="Search" />
+                <Image src="/search.svg" alt="Search" width={20} height={20} />
                 <input onKeyDown={handleSearch} type="text" placeholder="Search..." />
             </div>
-            <a href="/">Games</a>
-            <a href="/recommendations">Recommendations</a>
+            <Link href="/">Games</Link>
+            <Link href="/recommendations">Recommendations</Link>
             {user ? (
                 <>
-                    <a href="/profile">Profile</a>
+                    <Link href="/profile">Profile</Link>
                     <a href="/login" onClick={handleLogout}>Logout</a>
                 </>
             ) : (
-                <a href="/login">Login</a>
+                <Link href="/login">Login</Link>
             )}
         </div>
     );

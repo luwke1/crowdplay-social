@@ -21,7 +21,7 @@ export default function SearchPage() {
 
     const [loading, setLoading] = useState(false);
     const [results, setResults] = useState<GameResult[]>([]);
-
+    
     // fetch results from backend route
     const fetchResults = useCallback(async () => {
         if (!query) return;
@@ -54,19 +54,28 @@ export default function SearchPage() {
                 <div className="search-results">
                     <h1>Search Results for &quot;{query}&quot;</h1>
 
-                    {results.map((game) => (
-                        <div onClick={() => handleGameClick(game.id)} className="result-card" key={game.id}>
-                            <Image
-                                src={game.cover?.url.replace("t_thumb", "t_cover_big") || "/default-cover.jpg"}
-                                alt={game.name || "Game cover"}
-                                width={100}
-                                height={128}
-                            />
-                            <div className="result-info">
-                                <h2>{game.name}</h2>
+                    {results.map((game) => {
+                        let coverUrl = "/default-cover.jpg";
+                        if (game.cover?.url) {
+                            const url = game.cover.url;
+                            coverUrl = url.startsWith("//") ? `https:${url}` : url;
+                            coverUrl = coverUrl.replace("t_thumb", "t_cover_big");
+                        }
+
+                        return (
+                            <div onClick={() => handleGameClick(game.id)} className="result-card" key={game.id}>
+                                <Image
+                                    src={coverUrl}
+                                    alt={game.name || "Game cover"}
+                                    width={100}
+                                    height={128}
+                                />
+                                <div className="result-info">
+                                    <h2>{game.name}</h2>
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             )}
         </div>

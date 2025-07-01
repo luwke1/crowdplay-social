@@ -1,4 +1,4 @@
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function updateSession(request: NextRequest) {
@@ -15,20 +15,19 @@ export async function updateSession(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value));
+          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
           supabaseResponse = NextResponse.next({
             request,
-          });
-          cookiesToSet.forEach(({ name, value, options }) => {
+          })
+          cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
-          });
+          )
         },
       },
     }
   )
 
-  // IMPORTANT: The `auth.getUser()` method must be called to refresh the
-  // user's session.
+  // IMPORTANT: The `auth.getUser()` method must be called to refresh the user's session.
   const {
     data: { user },
   } = await supabase.auth.getUser()

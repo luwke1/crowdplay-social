@@ -12,6 +12,7 @@ export async function signup(formData: FormData) {
     const username = formData.get('username') as string;
 
     // 1. Check if username is already taken
+    // Removed unused 'usernameError' variable
     const { data: existingProfile } = await supabase
         .from('profiles')
         .select('username')
@@ -26,7 +27,11 @@ export async function signup(formData: FormData) {
     const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
-        options: { data: { username: username } }
+        options: {
+            data: {
+                username: username,
+            }
+        }
     });
 
     if (signUpError) {
@@ -35,7 +40,7 @@ export async function signup(formData: FormData) {
     }
 
     if (!authData.user) {
-        return redirect('/signup?message=Could not create user. Please try again.');
+         return redirect('/signup?message=Could not create user. Please try again.');
     }
 
     // 3. Create the associated entry in the public profiles table

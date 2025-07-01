@@ -55,7 +55,6 @@ export default function ReviewsPage() {
                 const data: Profile = await res.json();
                 setProfile(data);
             } catch (err) {
-                // Correctly type the caught error
                 console.error("Failed to fetch profile:", err);
                 setError((err as Error).message || "Failed to load profile.");
             } finally {
@@ -72,7 +71,7 @@ export default function ReviewsPage() {
             if (profile.isFollowing) {
                 // unfollow API call
                 await fetch(`/api/follow?username=${username}`, { method: 'DELETE' });
-                setProfile(p => p ? { ...p, isFollowing: false, followersCount: p.followersCount - 1 } : null);
+                setProfile((p: Profile | null) => p ? { ...p, isFollowing: false, followersCount: p.followersCount - 1 } : null);
             } else {
                 // follow API call
                 await fetch('/api/follow', {
@@ -80,10 +79,9 @@ export default function ReviewsPage() {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ usernameToFollow: username })
                 });
-                setProfile(p => p ? { ...p, isFollowing: true, followersCount: p.followersCount + 1 } : null);
+                setProfile((p: Profile | null) => p ? { ...p, isFollowing: true, followersCount: p.followersCount + 1 } : null);
             }
         } catch (err) {
-            // Check for Axios-like error structure safely
             const isUnauthorized = (err as any)?.response?.status === 401;
             if (isUnauthorized) {
                 router.push('/login');
