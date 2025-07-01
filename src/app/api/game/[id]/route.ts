@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { queryIgdb } from "@/services/igdbService";
 
 export async function GET(
+    _request: Request,
     { params }: { params: { id: string } }
 ) {
     const supabase = await createClient();
@@ -20,8 +21,8 @@ export async function GET(
         const [igdbData, publicReviewsRes, userReviewRes] = await Promise.all([
             queryIgdb("games", igdbQuery).then(data => data[0] || null),
             supabase.rpc("get_game_reviews", { game_id_input: gameId }),
-            user 
-                ? supabase.from("reviews").select("*").eq("user_id", user.id).eq("game_id", gameId).maybeSingle() 
+            user
+                ? supabase.from("reviews").select("*").eq("user_id", user.id).eq("game_id", gameId).maybeSingle()
                 : Promise.resolve({ data: null, error: null })
         ]);
 
