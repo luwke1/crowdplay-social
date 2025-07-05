@@ -12,6 +12,7 @@
 
 /* Layout: Three Columns */
 .game-container {
+    margin-top: 40px;
     display: grid;
     grid-template-columns: 1fr 2fr 1fr;
     gap: 20px;
