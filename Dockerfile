@@ -1,8 +1,8 @@
-# 1. Build stage
+# build stage
 FROM node:18-alpine AS builder
 WORKDIR /app
 
-# Accept build arguments for public environment variables
+# build arguments for public environment variables
 ARG NEXT_PUBLIC_SUPABASE_URL
 ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
 
@@ -29,7 +29,7 @@ USER nextjs
 
 # Copy only necessary artifacts from the build stage
 COPY --from=builder /app/public ./public
-# Copy standalone output (requires `output: 'standalone'` in next.config)
+# Copy standalone output
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 

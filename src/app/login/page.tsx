@@ -12,6 +12,7 @@ export default async function LoginPage({
         <div className="login-container">
             <div className="recruiter-message">
                 <p><strong>Welcome To This Site Demo!</strong></p>
+                <p>This site was made by Luke Flock, you can contact me at lflock03@gmail.com</p>
                 <p>Feel free to sign up with a fake email and password to test the site&apos;s features. The AI-powered recommendations feature is a highlight!</p>
                 <p>For the best experience, rate a few games first, then head to the <strong>Recommendations</strong> tab to get personalized suggestions.</p>
             </div>
