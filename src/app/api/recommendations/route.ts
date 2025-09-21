@@ -58,7 +58,7 @@ export async function POST(req: Request) {
         const responseText = await result.text;
         if (!responseText) {
             return NextResponse.json(
-                { error: "No response from Gemini." },
+                { error: "No valid response from Gemini." },
                 { status: 500 }
             );
         }
@@ -74,7 +74,7 @@ export async function POST(req: Request) {
             jsonResponse.map(async (game: { title: string }) => {
                 try {
                     // Create a search query for the specific game title
-                    const igdbQuery = `search "${game.title}"; fields name, cover.url; where cover != null & category = (0, 4, 8, 9) & parent_game = null; limit 1;`;
+                    const igdbQuery = `search "${game.title}"; fields name, cover.url; where parent_game = null; limit 1;`;
                     const igdbData = await queryIgdb("games", igdbQuery);
 
                     // Attach IGDB data to the game object
