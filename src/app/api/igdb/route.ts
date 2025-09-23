@@ -15,7 +15,7 @@ export async function GET(req: Request) {
         if (gameId) {
             queryBody = `fields name, cover.image_id, rating, summary, genres.name, release_dates.date; where id = ${gameId};`;
         } else if (searchTerm) {
-            queryBody = `search "${searchTerm}"; fields name, cover.url, rating, rating_count, summary, genres.name, release_dates.date; where cover != null & category = (0, 4, 8, 9) & parent_game = null; limit 20; offset ${offset};`;
+            queryBody = `search "${searchTerm}"; fields name, cover.url, rating, rating_count, summary, genres.name, release_dates.date; where parent_game = null; limit 20; offset ${offset};`;
         } else if (requestType === "latest") {
             const twoMonthsAgo = Math.floor(Date.now() / 1000) - 15778800;
             // For recently released and popular games
