@@ -56,6 +56,7 @@ export async function POST(req: Request) {
 
         // Check if the result is valid
         const responseText = await result.text;
+        console.log(responseText);
         if (!responseText) {
             return NextResponse.json(
                 { error: "No valid response from Gemini." },
