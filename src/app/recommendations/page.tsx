@@ -10,7 +10,7 @@ import "./recommendations.css";
 // structure of recommendation data
 type GameRecommendation = {
     title: string;
-    year: string;
+    year_released: string;
     reason: string;
     igdb: {
         cover?: { url: string; };

@@ -11,17 +11,17 @@ interface IgdbData {
 
 interface Recommendation {
     title: string;
-    year: string;
+    year_released: string;
     reason: string;
     igdb: IgdbData | null;
 }
 
 
 export default function RecommendCard({ recommendation }: { recommendation: Recommendation }) {
-    const { title, year, reason, igdb } = recommendation;
+    const { title, year_released, reason, igdb } = recommendation;
     const router = useRouter();
 
-    let sourceImage = "/default-cover.jpg";
+    let sourceImage = "/default-cover.png";
     if (igdb?.cover?.url) {
         sourceImage = igdb.cover.url.startsWith("//")
             ? `https:${igdb.cover.url}`
@@ -38,7 +38,7 @@ export default function RecommendCard({ recommendation }: { recommendation: Reco
         <div className='recommendationCard' onClick={handleGameClick}>
             <Image src={sourceImage} alt={`Cover art for ${title}`} width={100} height={128} />
             <div className='recDetails'>
-                <h4>{title} ({year})</h4>
+                <h4>{title} ({year_released})</h4>
                 <p>{reason}</p>
             </div>
         </div>
